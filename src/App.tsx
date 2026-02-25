@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/solvix-docs/">
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
