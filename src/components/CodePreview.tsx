@@ -5,14 +5,14 @@ import { useState } from "react";
 export default function CodePreview() {
     const [copied, setCopied] = useState(false);
 
-    const code = `import { solvix } from "solvix";
+    const code = `import { createClient } from "solvix";
 
-const api = solvix.create({
+const client = createClient({
   baseURL: "https://api.example.com",
-  retry: 3,
+  retry: { retries: 3 }
 });
 
-const { data } = await api.get("/users");`;
+const response = await client.get("/users");`;
 
     const handleCopy = () => {
         navigator.clipboard.writeText(code);
@@ -49,7 +49,7 @@ const { data } = await api.get("/users");`;
                                 <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
                                 <div className="w-3 h-3 rounded-full bg-green-500"></div>
                                 <span className="ml-4 text-sm text-gray-500">
-                                    example.ts
+                                    client.ts
                                 </span>
                             </div>
 

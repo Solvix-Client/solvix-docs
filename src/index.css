@@ -5,3 +5,11 @@
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-4px); }
 }
+
+.nav-link {
+  @apply text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-[#0FA38A] transition-colors duration-300;
+}
+
+.mobile-link {
+  @apply text-lg font-medium text-gray-800 dark:text-gray-200 hover:text-[#0FA38A] transition-colors duration-300;
+}
