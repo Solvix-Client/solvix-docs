@@ -1,31 +1,48 @@
-name: Deploy Solvix Site Docs to GitHub Pages
+name: Deploy Solvix Docs
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: write
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      # Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      # Setup Node (Node 20 recommended for Tailwind v4)
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
+          cache: "npm"
 
-      - name: Install dependencies
-        run: npm install
+      # Clean previous installs (Fix npm optional dependency bug)
+      - name: Clean node_modules and lockfile
+        run: |
+          rm -rf node_modules
+          rm -f package-lock.json
 
+      # Install dependencies with optional/native support
+      - name: Install dependencies (include native bindings)
+        run: npm install --include=optional
+
+      # Rebuild native modules explicitly (extra safety for Tailwind v4)
+      - name: Rebuild native modules
+        run: npm rebuild
+
+      # Build project
       - name: Build project
         run: npm run build
 
+      # Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
