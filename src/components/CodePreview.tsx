@@ -38,7 +38,7 @@ const { data } = await api.get("/users");`;
                     className="relative group"
                 >
                     {/* Outer Glow Border */}
-                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl blur-md opacity-20 group-hover:opacity-40 transition-all duration-500"></div>
+                    <div className="absolute -inset-1 bg-gradient-to-r from-[#1FD1B2] to-[#0FA38A] rounded-2xl blur-md opacity-20 group-hover:opacity-40 transition-all duration-500"></div>
 
                     <div className="relative bg-gray-900 rounded-2xl p-8 border border-gray-800 shadow-2xl transition-all duration-300">
 
