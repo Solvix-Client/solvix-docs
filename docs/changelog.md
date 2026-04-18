@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file.
 
 This project follows a structured release approach with clear feature additions and improvements.
 
-## [v0.0.1-beta.1] - Initial Release
+## [v1.0.0-beta.1] - Initial Release
 
 ### Overview
 
