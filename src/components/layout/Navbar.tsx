@@ -2,6 +2,7 @@ import { Book, Github, Heart } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "@docusaurus/Link";
+import logoUrl from "@site/static/img/solvix-png.png";
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -20,7 +21,7 @@ export default function Navbar() {
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-3 no-underline">
                         <img
-                            src="/img/solvix-png.png"
+                            src={logoUrl}
                             alt="Solvix Logo"
                             className="w-6 h-6 object-contain"
                         />
