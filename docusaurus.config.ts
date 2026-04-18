@@ -41,7 +41,7 @@ const config: Config = {
       {
         docs: {
           path: "docs",
-          routeBasePath: "/",
+          routeBasePath: "docs",
           sidebarPath: require.resolve("./sidebars.ts"),
           editUrl:
             'https://github.com/Solvix-Client/solvix/edit/main/docs',

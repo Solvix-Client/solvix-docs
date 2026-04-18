@@ -21,18 +21,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.20.2
           cache: "npm"
 
-      # Clean previous installs (Fix npm optional dependency bug)
-      - name: Clean node_modules and lockfile
-        run: |
-          rm -rf node_modules
-          rm -f package-lock.json
-
-      # Install dependencies with optional/native support
-      - name: Install dependencies (include native bindings)
-        run: npm install --include=optional
+      # Install the exact dependency tree committed to package-lock.json.
+      - name: Install dependencies
+        run: npm ci --include=optional
 
       # Rebuild native modules explicitly (extra safety for Tailwind v4)
       - name: Rebuild native modules

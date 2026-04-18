@@ -32,10 +32,10 @@ export default function Navbar() {
 
                     {/* Desktop Menu */}
                     <div className="hidden md:flex items-center gap-6">
-                        <a href="/docs" className="nav-link flex items-center gap-1">
+                        <Link to="/docs" className="nav-link flex items-center gap-1">
                             <Book size={16} />
                             Getting Started
-                        </a>
+                        </Link>
 
                         <a
                             href="https://github.com/Solvix-Client/solvix"
@@ -105,10 +105,10 @@ export default function Navbar() {
                             transition={{ type: "spring", stiffness: 260, damping: 25 }}
                             className="fixed top-0 right-0 h-full w-72 bg-white z-50 shadow-2xl p-8 flex flex-col gap-8"
                         >
-                            <a href="/docs" className="mobile-link flex items-center gap-2" onClick={() => setIsOpen(false)}>
+                            <Link to="/docs" className="mobile-link flex items-center gap-2" onClick={() => setIsOpen(false)}>
                                 <Book size={18} />
                                 Getting Started
-                            </a>
+                            </Link>
 
                             <a
                                 href="https://github.com/solvix/solvix"

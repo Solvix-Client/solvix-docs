@@ -1,5 +1,8 @@
 import { Github, Heart, Book } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "@docusaurus/Link";
+
+const MotionLink = motion.create(Link);
 
 export default function Hero() {
     return (
@@ -67,15 +70,15 @@ export default function Hero() {
                     className="flex flex-wrap items-center justify-center gap-4"
                 >
                     {/* Get Started */}
-                    <motion.a
-                        href="/docs"
+                    <MotionLink
+                        to="/docs"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.97 }}
                         className="inline-flex items-center gap-2 bg-gradient-to-r from-[#1FD1B2] to-[#0FA38A] hover:from-[#18C2A6] hover:to-[#0E8E79] text-white font-semibold px-8 py-2 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                     >
                         <Book size={18} />
                         Get Started
-                    </motion.a>
+                    </MotionLink>
 
                     {/* GitHub */}
                     <motion.a

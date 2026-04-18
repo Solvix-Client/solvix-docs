@@ -1,4 +1,5 @@
 import { LucideExternalLink } from "lucide-react";
+import Link from "@docusaurus/Link";
 
 export default function Footer() {
     return (
@@ -10,7 +11,7 @@ export default function Footer() {
 
                 <div className="flex items-center gap-8 text-sm text-gray-600">
                     <a href="https://github.com/Solvix-Client/solvix" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1">GitHub<LucideExternalLink size={14} /></a>
-                    <a href="/docs" className="text-sm text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1">Documentation<LucideExternalLink size={14} /></a>
+                    <Link to="/docs" className="text-sm text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1">Documentation<LucideExternalLink size={14} /></Link>
                     <a href="https://opencollective.com/solvix" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1">Sponsor<LucideExternalLink size={14} /></a>
                 </div>
             </div>
