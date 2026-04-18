@@ -1,0 +1,27 @@
+{
+  "id": "why-solvix",
+  "title": "Why Solvix",
+  "description": "Modern applications rely heavily on APIs, but handling APIs reliably is much harder than it seems.",
+  "source": "@site/docs/why-solvix.md",
+  "sourceDirName": ".",
+  "slug": "/why-solvix",
+  "permalink": "/solvix-docs/why-solvix",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/why-solvix.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Why Solvix"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Introduction",
+    "permalink": "/solvix-docs/"
+  },
+  "next": {
+    "title": "Architecture Overview",
+    "permalink": "/solvix-docs/architecture-overview"
+  }
+}

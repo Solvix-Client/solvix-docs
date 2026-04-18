@@ -1,0 +1,27 @@
+{
+  "id": "using-solvix-with-nextjs",
+  "title": "Using Solvix With Nextjs",
+  "description": "This guide explains how to use Solvix in Next.js applications, including Server Components, API routes, and Edge environments.",
+  "source": "@site/docs/using-solvix-with-nextjs.md",
+  "sourceDirName": ".",
+  "slug": "/using-solvix-with-nextjs",
+  "permalink": "/solvix-docs/using-solvix-with-nextjs",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/using-solvix-with-nextjs.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Using Solvix With Nextjs"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Using Solvix With React",
+    "permalink": "/solvix-docs/using-solvix-with-react"
+  },
+  "next": {
+    "title": "Using Solvix With Serveless",
+    "permalink": "/solvix-docs/using-solvix-with-serveless"
+  }
+}

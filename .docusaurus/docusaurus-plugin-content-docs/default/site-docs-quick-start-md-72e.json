@@ -1,0 +1,27 @@
+{
+  "id": "quick-start",
+  "title": "Quick Start",
+  "description": "This guide will help you get started with Solvix by walking through a complete example.",
+  "source": "@site/docs/quick-start.md",
+  "sourceDirName": ".",
+  "slug": "/quick-start",
+  "permalink": "/solvix-docs/quick-start",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/quick-start.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Quick Start"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Installation",
+    "permalink": "/solvix-docs/installation"
+  },
+  "next": {
+    "title": "Basic Request",
+    "permalink": "/solvix-docs/basic-request"
+  }
+}

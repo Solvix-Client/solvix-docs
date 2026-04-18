@@ -1,0 +1,293 @@
+{
+  "/solvix-docs/markdown-page-13a": {
+    "__comp": "1f391b9e",
+    "__context": {
+      "plugin": "a7456010"
+    },
+    "content": "393be207"
+  },
+  "/solvix-docs/-59d": {
+    "__comp": "1df93b7f",
+    "__context": {
+      "plugin": "a7456010"
+    },
+    "config": "5e9f5e1a"
+  },
+  "/solvix-docs/-323": {
+    "__comp": "5e95c892",
+    "__context": {
+      "plugin": "aba21aa0"
+    }
+  },
+  "/solvix-docs/-809": {
+    "__comp": "a7bd4aaa",
+    "__props": "10d249ad"
+  },
+  "/solvix-docs/-252": {
+    "__comp": "a94703ab"
+  },
+  "/solvix-docs/architecture-overview-752": {
+    "__comp": "17896441",
+    "content": "95094002"
+  },
+  "/solvix-docs/basic-request-22d": {
+    "__comp": "17896441",
+    "content": "9d66b111"
+  },
+  "/solvix-docs/benchmark-overview-189": {
+    "__comp": "17896441",
+    "content": "d043d15b"
+  },
+  "/solvix-docs/benchmark-results-9cd": {
+    "__comp": "17896441",
+    "content": "6d98e53a"
+  },
+  "/solvix-docs/body-size-guard-93a": {
+    "__comp": "17896441",
+    "content": "f6562e6a"
+  },
+  "/solvix-docs/bundle-size-analysis-383": {
+    "__comp": "17896441",
+    "content": "3ae27d3d"
+  },
+  "/solvix-docs/changelog-62c": {
+    "__comp": "17896441",
+    "content": "9beb87c2"
+  },
+  "/solvix-docs/circuit-breaker-6fa": {
+    "__comp": "17896441",
+    "content": "7cf43084"
+  },
+  "/solvix-docs/client-instance-892": {
+    "__comp": "17896441",
+    "content": "b2ad83cf"
+  },
+  "/solvix-docs/comparison-vs-axios-272": {
+    "__comp": "17896441",
+    "content": "cb5476b3"
+  },
+  "/solvix-docs/concurrency-test-047": {
+    "__comp": "17896441",
+    "content": "ac68dd0a"
+  },
+  "/solvix-docs/configuration-overview-ac8": {
+    "__comp": "17896441",
+    "content": "f27b7842"
+  },
+  "/solvix-docs/contribution-guide-03a": {
+    "__comp": "17896441",
+    "content": "b0d95fb7"
+  },
+  "/solvix-docs/custom-backoff-strategy-517": {
+    "__comp": "17896441",
+    "content": "8c90e51f"
+  },
+  "/solvix-docs/custom-error-handling-e9d": {
+    "__comp": "17896441",
+    "content": "b947edc6"
+  },
+  "/solvix-docs/custom-retry-logic-c05": {
+    "__comp": "17896441",
+    "content": "c416a52a"
+  },
+  "/solvix-docs/custom-transport-2dd": {
+    "__comp": "17896441",
+    "content": "a23e16f3"
+  },
+  "/solvix-docs/dependency-registry-b55": {
+    "__comp": "17896441",
+    "content": "1c76ac59"
+  },
+  "/solvix-docs/design-goal-260": {
+    "__comp": "17896441",
+    "content": "7445f2ab"
+  },
+  "/solvix-docs/development-setup-737": {
+    "__comp": "17896441",
+    "content": "a9670040"
+  },
+  "/solvix-docs/domain-allowlist-8f9": {
+    "__comp": "17896441",
+    "content": "35df070c"
+  },
+  "/solvix-docs/error-handling-basics-82d": {
+    "__comp": "17896441",
+    "content": "de64865c"
+  },
+  "/solvix-docs/etag-support-89a": {
+    "__comp": "17896441",
+    "content": "81003e45"
+  },
+  "/solvix-docs/header-sanitization-eb2": {
+    "__comp": "17896441",
+    "content": "dce33b96"
+  },
+  "/solvix-docs/hooks-ee0": {
+    "__comp": "17896441",
+    "content": "5f94b19d"
+  },
+  "/solvix-docs/https-enforcement-ab7": {
+    "__comp": "17896441",
+    "content": "7f8f0e0e"
+  },
+  "/solvix-docs/installation-5c4": {
+    "__comp": "17896441",
+    "content": "3b8c55ea"
+  },
+  "/solvix-docs/large-scale-api-orchestration-456": {
+    "__comp": "17896441",
+    "content": "e76fcda1"
+  },
+  "/solvix-docs/logging-events-solvixbus-ce6": {
+    "__comp": "17896441",
+    "content": "e93de3e6"
+  },
+  "/solvix-docs/memory-stability-test-640": {
+    "__comp": "17896441",
+    "content": "07675e82"
+  },
+  "/solvix-docs/middleware-system-603": {
+    "__comp": "17896441",
+    "content": "7dad7ce9"
+  },
+  "/solvix-docs/migrating-from-axios-5b1": {
+    "__comp": "17896441",
+    "content": "1fb43eb8"
+  },
+  "/solvix-docs/migrating-from-fetch-61f": {
+    "__comp": "17896441",
+    "content": "767af486"
+  },
+  "/solvix-docs/migrating-from-ky-966": {
+    "__comp": "17896441",
+    "content": "81aaf87e"
+  },
+  "/solvix-docs/offline-queue-1ca": {
+    "__comp": "17896441",
+    "content": "cff80d59"
+  },
+  "/solvix-docs/performance-metadata-a8a": {
+    "__comp": "17896441",
+    "content": "1ca458c6"
+  },
+  "/solvix-docs/profiling-mode-813": {
+    "__comp": "17896441",
+    "content": "1dca3818"
+  },
+  "/solvix-docs/quick-start-123": {
+    "__comp": "17896441",
+    "content": "72e14192"
+  },
+  "/solvix-docs/rate-limiting-c44": {
+    "__comp": "17896441",
+    "content": "b5f4ae12"
+  },
+  "/solvix-docs/request-deduplication-c96": {
+    "__comp": "17896441",
+    "content": "d8c5d5f6"
+  },
+  "/solvix-docs/request-dependencies-455": {
+    "__comp": "17896441",
+    "content": "dd142a5a"
+  },
+  "/solvix-docs/request-grouping-882": {
+    "__comp": "17896441",
+    "content": "1624c115"
+  },
+  "/solvix-docs/request-options-reference-98c": {
+    "__comp": "17896441",
+    "content": "368e2e89"
+  },
+  "/solvix-docs/request-priority-queue-ec8": {
+    "__comp": "17896441",
+    "content": "39dee4a9"
+  },
+  "/solvix-docs/response-object-structure-d4f": {
+    "__comp": "17896441",
+    "content": "a8caa209"
+  },
+  "/solvix-docs/response-size-guard-29a": {
+    "__comp": "17896441",
+    "content": "a6cfaa57"
+  },
+  "/solvix-docs/response-structure-ce5": {
+    "__comp": "17896441",
+    "content": "10c7b077"
+  },
+  "/solvix-docs/retry-engine-045": {
+    "__comp": "17896441",
+    "content": "c4dac5a7"
+  },
+  "/solvix-docs/retry-storm-test-70c": {
+    "__comp": "17896441",
+    "content": "0e159c3f"
+  },
+  "/solvix-docs/secure-configuration-examples-8d3": {
+    "__comp": "17896441",
+    "content": "1de532d8"
+  },
+  "/solvix-docs/shadow-mode-execution-752": {
+    "__comp": "17896441",
+    "content": "1462fbde"
+  },
+  "/solvix-docs/snapshot-debugging-3a0": {
+    "__comp": "17896441",
+    "content": "2ea786f6"
+  },
+  "/solvix-docs/snapshot-redaction-54d": {
+    "__comp": "17896441",
+    "content": "f1ab5202"
+  },
+  "/solvix-docs/streaming-support-sse-json-lines-c87": {
+    "__comp": "17896441",
+    "content": "2364030d"
+  },
+  "/solvix-docs/timeline-tracking-af8": {
+    "__comp": "17896441",
+    "content": "4e2a21a8"
+  },
+  "/solvix-docs/timeout-handling-857": {
+    "__comp": "17896441",
+    "content": "adabfee3"
+  },
+  "/solvix-docs/token-refresh-orchestrator-025": {
+    "__comp": "17896441",
+    "content": "797ad42a"
+  },
+  "/solvix-docs/token-refresh-stampede-test-988": {
+    "__comp": "17896441",
+    "content": "18a3ad60"
+  },
+  "/solvix-docs/transform-request-858": {
+    "__comp": "17896441",
+    "content": "55b529a1"
+  },
+  "/solvix-docs/transform-response-e40": {
+    "__comp": "17896441",
+    "content": "b2f5af3a"
+  },
+  "/solvix-docs/using-solvix-with-microservices-08d": {
+    "__comp": "17896441",
+    "content": "e781fc3b"
+  },
+  "/solvix-docs/using-solvix-with-nextjs-5d4": {
+    "__comp": "17896441",
+    "content": "f6af763a"
+  },
+  "/solvix-docs/using-solvix-with-react-75e": {
+    "__comp": "17896441",
+    "content": "9e1c373f"
+  },
+  "/solvix-docs/using-solvix-with-serveless-28a": {
+    "__comp": "17896441",
+    "content": "699dfb46"
+  },
+  "/solvix-docs/why-solvix-f9f": {
+    "__comp": "17896441",
+    "content": "68e5aac5"
+  },
+  "/solvix-docs/-0b0": {
+    "__comp": "17896441",
+    "content": "a09c2993"
+  }
+}

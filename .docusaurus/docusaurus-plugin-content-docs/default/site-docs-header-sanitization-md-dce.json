@@ -1,0 +1,27 @@
+{
+  "id": "header-sanitization",
+  "title": "Header Sanitization",
+  "description": "Header Sanitization in Solvix ensures that outgoing request headers are safe, clean, and free from insecure or malicious values.",
+  "source": "@site/docs/header-sanitization.md",
+  "sourceDirName": ".",
+  "slug": "/header-sanitization",
+  "permalink": "/solvix-docs/header-sanitization",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/header-sanitization.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Header Sanitization"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Domain Allowlist",
+    "permalink": "/solvix-docs/domain-allowlist"
+  },
+  "next": {
+    "title": "Body Size Guard",
+    "permalink": "/solvix-docs/body-size-guard"
+  }
+}

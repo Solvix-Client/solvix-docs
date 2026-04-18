@@ -1,0 +1,27 @@
+{
+  "id": "hooks",
+  "title": "Hooks",
+  "description": "Hooks allow you to intercept and customize the request lifecycle in Solvix.",
+  "source": "@site/docs/hooks.md",
+  "sourceDirName": ".",
+  "slug": "/hooks",
+  "permalink": "/solvix-docs/hooks",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/hooks.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Hooks"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Response Object Structure",
+    "permalink": "/solvix-docs/response-object-structure"
+  },
+  "next": {
+    "title": "Retry Engine",
+    "permalink": "/solvix-docs/retry-engine"
+  }
+}

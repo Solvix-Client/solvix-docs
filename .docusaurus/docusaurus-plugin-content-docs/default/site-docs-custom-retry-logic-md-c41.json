@@ -1,0 +1,27 @@
+{
+  "id": "custom-retry-logic",
+  "title": "Custom Retry Logic",
+  "description": "Custom Retry Logic in Solvix allows you to fully control how retries behave when a request fails.",
+  "source": "@site/docs/custom-retry-logic.md",
+  "sourceDirName": ".",
+  "slug": "/custom-retry-logic",
+  "permalink": "/solvix-docs/custom-retry-logic",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/custom-retry-logic.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Custom Retry Logic"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Transform Response",
+    "permalink": "/solvix-docs/transform-response"
+  },
+  "next": {
+    "title": "Custom Backoff Strategy",
+    "permalink": "/solvix-docs/custom-backoff-strategy"
+  }
+}

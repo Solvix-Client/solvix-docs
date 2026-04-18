@@ -1,0 +1,27 @@
+{
+  "id": "architecture-overview",
+  "title": "Architecture Overview",
+  "description": "Solvix is designed as a layered and modular HTTP client that handles not only request execution, but also reliability, security, and observability.",
+  "source": "@site/docs/architecture-overview.md",
+  "sourceDirName": ".",
+  "slug": "/architecture-overview",
+  "permalink": "/solvix-docs/architecture-overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/architecture-overview.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Architecture Overview"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Why Solvix",
+    "permalink": "/solvix-docs/why-solvix"
+  },
+  "next": {
+    "title": "Design Goal",
+    "permalink": "/solvix-docs/design-goal"
+  }
+}

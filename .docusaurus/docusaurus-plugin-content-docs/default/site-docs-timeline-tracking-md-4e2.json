@@ -1,0 +1,27 @@
+{
+  "id": "timeline-tracking",
+  "title": "Timeline Tracking",
+  "description": "Timeline Tracking in Solvix records every stage of a request lifecycle with precise timestamps.",
+  "source": "@site/docs/timeline-tracking.md",
+  "sourceDirName": ".",
+  "slug": "/timeline-tracking",
+  "permalink": "/solvix-docs/timeline-tracking",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/timeline-tracking.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Timeline Tracking"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Snapshot Debugging",
+    "permalink": "/solvix-docs/snapshot-debugging"
+  },
+  "next": {
+    "title": "Profiling Mode",
+    "permalink": "/solvix-docs/profiling-mode"
+  }
+}

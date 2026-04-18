@@ -1,0 +1,27 @@
+{
+  "id": "retry-engine",
+  "title": "Retry Engine",
+  "description": "The Retry Engine in Solvix ensures that transient failures do not break your application.",
+  "source": "@site/docs/retry-engine.md",
+  "sourceDirName": ".",
+  "slug": "/retry-engine",
+  "permalink": "/solvix-docs/retry-engine",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/retry-engine.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Retry Engine"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Hooks",
+    "permalink": "/solvix-docs/hooks"
+  },
+  "next": {
+    "title": "Circuit Breaker",
+    "permalink": "/solvix-docs/circuit-breaker"
+  }
+}

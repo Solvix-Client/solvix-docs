@@ -1,0 +1,27 @@
+{
+  "id": "snapshot-redaction",
+  "title": "Snapshot Redaction",
+  "description": "Snapshot Redaction in Solvix ensures that sensitive data is masked or removed from debugging snapshots.",
+  "source": "@site/docs/snapshot-redaction.md",
+  "sourceDirName": ".",
+  "slug": "/snapshot-redaction",
+  "permalink": "/solvix-docs/snapshot-redaction",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/snapshot-redaction.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Snapshot Redaction"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Response Size Guard",
+    "permalink": "/solvix-docs/response-size-guard"
+  },
+  "next": {
+    "title": "Secure Configuration Examples",
+    "permalink": "/solvix-docs/secure-configuration-examples"
+  }
+}

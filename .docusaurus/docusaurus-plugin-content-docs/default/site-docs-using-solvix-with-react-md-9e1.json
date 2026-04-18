@@ -1,0 +1,27 @@
+{
+  "id": "using-solvix-with-react",
+  "title": "Using Solvix With React",
+  "description": "This guide explains how to use Solvix in React applications with clear patterns and best practices.",
+  "source": "@site/docs/using-solvix-with-react.md",
+  "sourceDirName": ".",
+  "slug": "/using-solvix-with-react",
+  "permalink": "/solvix-docs/using-solvix-with-react",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/using-solvix-with-react.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Using Solvix With React"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Streaming Support Sse Json Lines",
+    "permalink": "/solvix-docs/streaming-support-sse-json-lines"
+  },
+  "next": {
+    "title": "Using Solvix With Nextjs",
+    "permalink": "/solvix-docs/using-solvix-with-nextjs"
+  }
+}

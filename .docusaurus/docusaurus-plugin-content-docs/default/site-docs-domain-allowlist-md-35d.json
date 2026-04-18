@@ -1,0 +1,27 @@
+{
+  "id": "domain-allowlist",
+  "title": "Domain Allowlist",
+  "description": "Domain Allowlist in Solvix restricts outgoing requests to a predefined set of trusted domains.",
+  "source": "@site/docs/domain-allowlist.md",
+  "sourceDirName": ".",
+  "slug": "/domain-allowlist",
+  "permalink": "/solvix-docs/domain-allowlist",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/domain-allowlist.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Domain Allowlist"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Https Enforcement",
+    "permalink": "/solvix-docs/https-enforcement"
+  },
+  "next": {
+    "title": "Header Sanitization",
+    "permalink": "/solvix-docs/header-sanitization"
+  }
+}

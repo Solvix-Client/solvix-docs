@@ -1,0 +1,18 @@
+{
+  "id": "migrating-from-fetch",
+  "title": "Migrating From Fetch",
+  "description": "",
+  "source": "@site/docs/migrating-from-fetch.md",
+  "sourceDirName": ".",
+  "slug": "/migrating-from-fetch",
+  "permalink": "/solvix-docs/migrating-from-fetch",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/migrating-from-fetch.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Migrating From Fetch"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "basic-request",
+  "title": "Basic Request",
+  "description": "Solvix provides a simple and consistent API for making HTTP requests.",
+  "source": "@site/docs/basic-request.md",
+  "sourceDirName": ".",
+  "slug": "/basic-request",
+  "permalink": "/solvix-docs/basic-request",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/basic-request.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Basic Request"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Quick Start",
+    "permalink": "/solvix-docs/quick-start"
+  },
+  "next": {
+    "title": "Response Structure",
+    "permalink": "/solvix-docs/response-structure"
+  }
+}

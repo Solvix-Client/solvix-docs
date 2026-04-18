@@ -1,0 +1,23 @@
+{
+  "id": "contribution-guide",
+  "title": "Contribution Guide",
+  "description": "Thank you for your interest in contributing to Solvix!",
+  "source": "@site/docs/contribution-guide.md",
+  "sourceDirName": ".",
+  "slug": "/contribution-guide",
+  "permalink": "/solvix-docs/contribution-guide",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/contribution-guide.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Contribution Guide"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Bundle Size Analysis",
+    "permalink": "/solvix-docs/bundle-size-analysis"
+  }
+}

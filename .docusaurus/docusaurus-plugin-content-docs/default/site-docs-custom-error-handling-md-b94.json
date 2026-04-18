@@ -1,0 +1,27 @@
+{
+  "id": "custom-error-handling",
+  "title": "Custom Error Handling",
+  "description": "Custom Error Handling in Solvix allows you to control how errors are processed, transformed, and returned to your application.",
+  "source": "@site/docs/custom-error-handling.md",
+  "sourceDirName": ".",
+  "slug": "/custom-error-handling",
+  "permalink": "/solvix-docs/custom-error-handling",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/custom-error-handling.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Custom Error Handling"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Custom Backoff Strategy",
+    "permalink": "/solvix-docs/custom-backoff-strategy"
+  },
+  "next": {
+    "title": "Etag Support",
+    "permalink": "/solvix-docs/etag-support"
+  }
+}

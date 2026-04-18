@@ -1,0 +1,27 @@
+{
+  "id": "https-enforcement",
+  "title": "Https Enforcement",
+  "description": "HTTPS Enforcement in Solvix ensures that all requests are made over secure HTTPS connections.",
+  "source": "@site/docs/https-enforcement.md",
+  "sourceDirName": ".",
+  "slug": "/https-enforcement",
+  "permalink": "/solvix-docs/https-enforcement",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/https-enforcement.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Https Enforcement"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Shadow Mode Execution",
+    "permalink": "/solvix-docs/shadow-mode-execution"
+  },
+  "next": {
+    "title": "Domain Allowlist",
+    "permalink": "/solvix-docs/domain-allowlist"
+  }
+}

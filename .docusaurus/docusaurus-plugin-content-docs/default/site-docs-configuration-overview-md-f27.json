@@ -1,0 +1,27 @@
+{
+  "id": "configuration-overview",
+  "title": "Configuration Overview",
+  "description": "Solvix is built to be highly configurable.",
+  "source": "@site/docs/configuration-overview.md",
+  "sourceDirName": ".",
+  "slug": "/configuration-overview",
+  "permalink": "/solvix-docs/configuration-overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/configuration-overview.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Configuration Overview"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Error Handling Basics",
+    "permalink": "/solvix-docs/error-handling-basics"
+  },
+  "next": {
+    "title": "Changelog",
+    "permalink": "/solvix-docs/changelog"
+  }
+}

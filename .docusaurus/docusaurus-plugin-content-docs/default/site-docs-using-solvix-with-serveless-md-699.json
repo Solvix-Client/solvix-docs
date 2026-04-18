@@ -1,0 +1,27 @@
+{
+  "id": "using-solvix-with-serveless",
+  "title": "Using Solvix With Serveless",
+  "description": "This guide explains how to use Solvix in Serverless environments such as AWS Lambda, Vercel Functions, and Cloudflare Workers.",
+  "source": "@site/docs/using-solvix-with-serveless.md",
+  "sourceDirName": ".",
+  "slug": "/using-solvix-with-serveless",
+  "permalink": "/solvix-docs/using-solvix-with-serveless",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/using-solvix-with-serveless.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Using Solvix With Serveless"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Using Solvix With Nextjs",
+    "permalink": "/solvix-docs/using-solvix-with-nextjs"
+  },
+  "next": {
+    "title": "Using Solvix With Microservices",
+    "permalink": "/solvix-docs/using-solvix-with-microservices"
+  }
+}

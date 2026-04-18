@@ -1,0 +1,18 @@
+{
+  "id": "migrating-from-axios",
+  "title": "Migrating From Axios",
+  "description": "",
+  "source": "@site/docs/migrating-from-axios.md",
+  "sourceDirName": ".",
+  "slug": "/migrating-from-axios",
+  "permalink": "/solvix-docs/migrating-from-axios",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/migrating-from-axios.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Migrating From Axios"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "benchmark-overview",
+  "title": "Benchmark Overview",
+  "description": "This section provides a comprehensive analysis of Solvix performance across multiple real-world scenarios.",
+  "source": "@site/docs/benchmark-overview.md",
+  "sourceDirName": ".",
+  "slug": "/benchmark-overview",
+  "permalink": "/solvix-docs/benchmark-overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/benchmark-overview.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Benchmark Overview"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Large Scale Api Orchestration",
+    "permalink": "/solvix-docs/large-scale-api-orchestration"
+  },
+  "next": {
+    "title": "Memory Stability Test",
+    "permalink": "/solvix-docs/memory-stability-test"
+  }
+}

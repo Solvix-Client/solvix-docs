@@ -1,0 +1,27 @@
+{
+  "id": "bundle-size-analysis",
+  "title": "Bundle Size Analysis",
+  "description": "This section analyzes the bundle size of Solvix and its impact on performance across different environments.",
+  "source": "@site/docs/bundle-size-analysis.md",
+  "sourceDirName": ".",
+  "slug": "/bundle-size-analysis",
+  "permalink": "/solvix-docs/bundle-size-analysis",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/bundle-size-analysis.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Bundle Size Analysis"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Token Refresh Stampede Test",
+    "permalink": "/solvix-docs/token-refresh-stampede-test"
+  },
+  "next": {
+    "title": "Contribution Guide",
+    "permalink": "/solvix-docs/contribution-guide"
+  }
+}

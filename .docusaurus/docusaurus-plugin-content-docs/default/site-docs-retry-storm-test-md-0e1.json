@@ -1,0 +1,27 @@
+{
+  "id": "retry-storm-test",
+  "title": "Retry Storm Test",
+  "description": "This benchmark evaluates how Solvix behaves under repeated failures and ensures it prevents uncontrolled retry storms.",
+  "source": "@site/docs/retry-storm-test.md",
+  "sourceDirName": ".",
+  "slug": "/retry-storm-test",
+  "permalink": "/solvix-docs/retry-storm-test",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/retry-storm-test.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Retry Storm Test"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Concurrency Test",
+    "permalink": "/solvix-docs/concurrency-test"
+  },
+  "next": {
+    "title": "Token Refresh Stampede Test",
+    "permalink": "/solvix-docs/token-refresh-stampede-test"
+  }
+}

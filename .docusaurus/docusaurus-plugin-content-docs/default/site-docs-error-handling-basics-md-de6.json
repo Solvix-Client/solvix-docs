@@ -1,0 +1,27 @@
+{
+  "id": "error-handling-basics",
+  "title": "Error Handling Basics",
+  "description": "Solvix provides a structured and predictable way to handle errors.",
+  "source": "@site/docs/error-handling-basics.md",
+  "sourceDirName": ".",
+  "slug": "/error-handling-basics",
+  "permalink": "/solvix-docs/error-handling-basics",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/error-handling-basics.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Error Handling Basics"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Response Structure",
+    "permalink": "/solvix-docs/response-structure"
+  },
+  "next": {
+    "title": "Configuration Overview",
+    "permalink": "/solvix-docs/configuration-overview"
+  }
+}

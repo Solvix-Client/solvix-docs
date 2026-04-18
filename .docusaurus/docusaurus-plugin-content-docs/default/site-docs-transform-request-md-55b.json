@@ -1,0 +1,27 @@
+{
+  "id": "transform-request",
+  "title": "Transform Request",
+  "description": "Transform Request in Solvix allows you to modify or enhance the request before it is sent to the server.",
+  "source": "@site/docs/transform-request.md",
+  "sourceDirName": ".",
+  "slug": "/transform-request",
+  "permalink": "/solvix-docs/transform-request",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/transform-request.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Transform Request"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Middleware System",
+    "permalink": "/solvix-docs/middleware-system"
+  },
+  "next": {
+    "title": "Transform Response",
+    "permalink": "/solvix-docs/transform-response"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "offline-queue",
+  "title": "Offline Queue",
+  "description": "The Offline Queue in Solvix ensures that requests are not lost when the network is unavailable.",
+  "source": "@site/docs/offline-queue.md",
+  "sourceDirName": ".",
+  "slug": "/offline-queue",
+  "permalink": "/solvix-docs/offline-queue",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Solvix-Client/solvix/edit/main/docs/docs/offline-queue.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedAt": null,
+  "frontMatter": {
+    "title": "Offline Queue"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Token Refresh Orchestrator",
+    "permalink": "/solvix-docs/token-refresh-orchestrator"
+  },
+  "next": {
+    "title": "Shadow Mode Execution",
+    "permalink": "/solvix-docs/shadow-mode-execution"
+  }
+}
