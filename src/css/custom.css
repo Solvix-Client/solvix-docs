@@ -4,6 +4,7 @@
 
 :root {
   --solvix-navbar-height: 72px;
+  --ifm-navbar-height: 72px;
   --solvix-bg-primary: #ffffff;
   --solvix-bg-secondary: #f8fafc;
   --solvix-text-primary: #0f172a;
@@ -66,12 +67,16 @@
 
 html {
   scroll-behavior: smooth;
-  overflow-x: hidden;
 }
 
 body {
-  overflow-x: hidden;
   max-width: 100vw;
+  /* clip landing page overflow without breaking sticky positioning */
+}
+
+/* Clip overflow only on the landing page wrapper, not globally */
+.homepage-wrapper {
+  overflow-x: hidden;
 }
 
 /* ===== LAYOUT ===== */
@@ -85,7 +90,7 @@ body {
   padding-top: var(--solvix-navbar-height);
   max-width: 1400px;
   margin: 0 auto;
-  overflow-x: hidden;
+  /* NOTE: do NOT set overflow-x: hidden here — it breaks position: sticky on TOC */
 }
 
 .homepage-wrapper main,
@@ -148,17 +153,15 @@ body {
     max-width: 100% !important;
     padding-left: 12px !important;
     padding-right: 12px !important;
-    overflow-x: hidden;
+    /* NOTE: no overflow-x: hidden — breaks sticky */
   }
 
   .main-wrapper {
     max-width: 100%;
-    overflow-x: hidden;
   }
 
   .theme-doc-content {
     padding: 0 !important;
-    overflow-x: hidden;
   }
 
   .theme-doc-markdown,

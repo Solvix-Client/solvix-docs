@@ -6,7 +6,7 @@ const MotionLink = motion.create(Link);
 
 export default function Hero() {
     return (
-        <section className="relative pt-12 pb-20 px-4 sm:px-6 overflow-hidden">
+        <section className="relative pt-12 sm:pt-32 pb-20 px-4 sm:px-6 overflow-hidden">
 
             <div className="max-w-4xl mx-auto text-center w-full">
                 {/* Version Badge */}
