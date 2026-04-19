@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* =========================
-   GLOBAL SETTINGS
-========================= */
-
 :root {
   --solvix-navbar-height: 72px;
 }
@@ -14,37 +10,28 @@ html {
   scroll-behavior: smooth;
 }
 
-/* =========================
-   LAYOUT FIX (VERY IMPORTANT)
-========================= */
-
-/* Fix container width */
 .container {
   max-width: 1400px !important;
 }
 
-/* Main wrapper */
 .main-wrapper {
   padding-top: var(--solvix-navbar-height);
   max-width: 1400px;
   margin: 0 auto;
 }
 
-/* Center docs content */
 .theme-doc-content {
   display: flex;
   justify-content: center;
   padding: 0 24px;
 }
 
-/* FIXED CONTENT WIDTH (FINAL FIX) */
 .theme-doc-markdown {
   width: 100%;
   max-width: 780px !important;
   margin: 0 auto;
 }
 
-/* Keep the docs column width consistent across pages */
 @media (min-width: 997px) {
   .docs-doc-page .row {
     justify-content: center;
@@ -61,7 +48,6 @@ html {
   }
 }
 
-/* Hide the right-side "On this page" TOC column on mobile only */
 @media (max-width: 996px) {
   .docs-doc-page .row > .col.col--3,
   .theme-doc-toc-mobile {
@@ -69,18 +55,15 @@ html {
   }
 }
 
-/* Fix grid alignment */
 .row {
   justify-content: center;
 }
 
-/* Sidebar positioning */
 .theme-doc-sidebar-container {
   top: var(--solvix-navbar-height) !important;
   height: calc(100vh - var(--solvix-navbar-height));
 }
 
-/* Smooth desktop TOC highlight while scrolling */
 @media (min-width: 997px) {
   .theme-doc-markdown :is(h2, h3, h4, h5, h6) {
     scroll-margin-top: calc(var(--solvix-navbar-height) + 24px);
@@ -129,12 +112,6 @@ html {
   }
 }
 
-
-
-/* =========================
-   MARKDOWN BASE
-========================= */
-
 .markdown {
   max-width: 780px;
   font-size: 16px;
@@ -145,10 +122,6 @@ html {
 .markdown > * + * {
   margin-top: 12px;
 }
-
-/* =========================
-   HEADINGS
-========================= */
 
 .markdown h1 {
   font-size: 34px;
@@ -176,17 +149,9 @@ html {
   color: var(--ifm-heading-color);
 }
 
-/* =========================
-   TEXT
-========================= */
-
 .markdown p {
   margin: 12px 0;
 }
-
-/* =========================
-   LISTS
-========================= */
 
 .markdown ul {
   list-style: disc;
@@ -208,10 +173,6 @@ html {
   color: #0fa38a;
 }
 
-/* =========================
-   LINKS
-========================= */
-
 .markdown a {
   color: #0fa38a;
   text-decoration: none;
@@ -221,16 +182,10 @@ html {
   text-decoration: underline;
 }
 
-/* =========================
-   CODE BLOCKS
-========================= */
-
-/* Remove default override conflict */
 pre {
   background: transparent !important;
 }
 
-/* Styled markdown code */
 .markdown pre {
   border-radius: 14px;
   padding: 18px;
@@ -256,59 +211,39 @@ pre {
   color: #0f172a;
 }
 
-/* =========================
-   DIVIDERS
-========================= */
-
 .markdown hr {
   margin: 40px 0;
   border-color: var(--ifm-color-emphasis-200);
 }
 
-/* =========================
-   SIDEBAR IMPROVEMENTS
-========================= */
-
-/* Nested spacing */
 .menu__list .menu__list {
   margin-left: 0.75rem;
   padding-left: 0.5rem;
   border-left: 1px solid var(--ifm-color-emphasis-200);
 }
 
-/* Item spacing */
 .menu__list-item {
   margin: 2px 0;
 }
 
-/* Parent categories */
 .menu__list-item-collapsible > .menu__link {
   font-weight: 600;
 }
 
-/* Child items */
 .menu__list .menu__list .menu__link {
   font-size: 0.95rem;
   opacity: 0.85;
 }
 
-/* Active link */
 .menu__link--active {
   color: #0fa38a !important;
   font-weight: 600;
 }
 
-/* Hover */
 .menu__link:hover {
   background: rgba(15, 163, 138, 0.08);
   border-radius: 6px;
 }
-
-
-
-/* =========================
-   ANIMATIONS (OPTIONAL)
-========================= */
 
 @keyframes float {
   0%,
@@ -337,4 +272,75 @@ pre {
   height: 14px;
   position: relative;
   top: 1px;
+}
+
+.mobile-link {
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 12px 0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-link:hover {
+  background: var(--ifm-hover-overlay);
+  color: var(--ifm-color-primary);
+}
+
+.nav-link {
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  background: var(--ifm-hover-overlay);
+  color: var(--ifm-color-primary);
+}
+
+.navbar-custom {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.dark .navbar-custom {
+  background: #111827;
+  border-bottom: 1px solid #374151;
+}
+
+.mobile-hamburger {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.mobile-hamburger:hover {
+  background: rgba(156, 163, 175, 0.1);
+}
+
+.dark .mobile-hamburger:hover {
+  background: rgba(75, 85, 99, 0.3);
+}
+
+.hamburger-line {
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-panel {
+  background: white;
+  border-left: 1px solid #e5e7eb;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.dark .mobile-menu-panel {
+  background: #111827;
+  border-left: 1px solid #374151;
 }

@@ -104,6 +104,11 @@ const config: Config = {
         content: 'https://solvix-client.github.io/solvix-docs/img/solvix-png.png',
       },
     ],
+    colorMode: {
+      defaultMode: 'light',
+      disableSwitch: false,
+      respectPrefersColorScheme: true,
+    },
     prism: {
       theme: prismThemes.github,
     },

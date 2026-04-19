@@ -10,7 +10,7 @@ export default function Navbar() {
     return (
         <>
             {/* NAVBAR */}
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+            <nav className="navbar-custom fixed top-0 left-0 right-0 z-50">
                 <div
                     aria-hidden="true"
                     className="navbar absolute inset-x-0 top-0 h-full opacity-0 pointer-events-none -z-10"
@@ -60,24 +60,24 @@ export default function Navbar() {
                     {/* Mobile Hamburger */}
                     <button
                         onClick={() => setIsOpen(!isOpen)}
-                        className="md:hidden relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 transition transform hover:scale-105 active:scale-95"
+                        className="mobile-hamburger md:hidden relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition transform hover:scale-105 active:scale-95"
                     >
                         <div className="relative w-6 h-5">
                             {/* Top */}
                             <span
-                                className={`absolute left-0 h-0.5 w-6 bg-gray-900 transition duration-300
+                                className={`hamburger-line absolute left-0 h-0.5 w-6 bg-gray-900 dark:bg-gray-100 transition duration-300
                 ${isOpen ? "rotate-45 top-2.5 bg-[#0FA38A]" : "top-0"}`}
                             />
 
                             {/* Middle */}
                             <span
-                                className={`absolute left-0 h-0.5 w-6 bg-gray-900 transition duration-300
+                                className={`hamburger-line absolute left-0 h-0.5 w-6 bg-gray-900 dark:bg-gray-100 transition duration-300
                 ${isOpen ? "opacity-0" : "top-2.5"}`}
                             />
 
                             {/* Bottom */}
                             <span
-                                className={`absolute left-0 h-0.5 w-6 bg-gray-900 transition duration-300
+                                className={`hamburger-line absolute left-0 h-0.5 w-6 bg-gray-900 dark:bg-gray-100 transition duration-300
                 ${isOpen ? "-rotate-45 top-2.5 bg-[#0FA38A]" : "top-5"}`}
                             />
                         </div>
@@ -104,8 +104,30 @@ export default function Navbar() {
                             animate={{ x: 0 }}
                             exit={{ x: "100%" }}
                             transition={{ type: "spring", stiffness: 260, damping: 25 }}
-                            className="fixed top-0 right-0 h-full w-72 bg-white z-50 shadow-2xl p-8 flex flex-col gap-8"
+                            className="mobile-menu-panel fixed top-0 right-0 h-full w-72 z-50 p-8 flex flex-col gap-8"
                         >
+                            {/* Close Button */}
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                className="self-end p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                aria-label="Close menu"
+                            >
+                                <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="text-gray-600 dark:text-gray-400"
+                                >
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+
                             <Link to="/docs" className="mobile-link flex items-center gap-2" onClick={() => setIsOpen(false)}>
                                 <Book size={18} />
                                 Getting Started
