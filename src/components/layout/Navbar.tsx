@@ -1,11 +1,22 @@
-import { Book, Github, Heart } from "lucide-react";
-import { useState } from "react";
+import { Book, Github, Heart, Moon, Sun } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useColorMode } from "@docusaurus/theme-common";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "@docusaurus/Link";
 import logoUrl from "@site/static/img/solvix-png.png";
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
+    const { colorMode, setColorMode } = useColorMode();
+    const [mounted, setMounted] = useState(false);
+
+    // Prevent hydration mismatch
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const isDark = colorMode === "dark";
+    const toggleTheme = () => setColorMode(isDark ? "light" : "dark");
 
     return (
         <>
@@ -55,6 +66,18 @@ export default function Navbar() {
                             <Heart size={16} />
                             Sponsor
                         </a>
+
+                        {/* Theme Toggle */}
+                        {mounted && (
+                            <button
+                                onClick={toggleTheme}
+                                className="nav-link flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                                aria-label="Toggle dark mode"
+                                title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+                            >
+                                {isDark ? <Sun size={18} /> : <Moon size={18} />}
+                            </button>
+                        )}
                     </div>
 
                     {/* Mobile Hamburger */}
@@ -152,6 +175,27 @@ export default function Navbar() {
                                 <Heart size={18} />
                                 Sponsor
                             </a>
+
+                            {/* Theme Toggle Mobile */}
+                            {mounted && (
+                                <button
+                                    onClick={toggleTheme}
+                                    className="mobile-link flex items-center gap-2 border-t border-gray-200 dark:border-gray-700 pt-6 mt-4"
+                                    title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+                                >
+                                    {isDark ? (
+                                        <>
+                                            <Sun size={18} />
+                                            Light Mode
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Moon size={18} />
+                                            Dark Mode
+                                        </>
+                                    )}
+                                </button>
+                            )}
                         </motion.div>
                     </>
                 )}
