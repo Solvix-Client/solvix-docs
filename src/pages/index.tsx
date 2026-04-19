@@ -16,7 +16,7 @@ export default function App() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
         layout="position"
-        className="homepage-wrapper min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-50"
+        className="homepage-wrapper min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-50 overflow-x-hidden"
       >
         <Hero />
         <InstallSection />

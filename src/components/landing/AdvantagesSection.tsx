@@ -26,7 +26,7 @@ export default function AdvantagesSection() {
     ];
 
     return (
-        <section className="py-24 px-6">
+        <section className="py-24 px-4 sm:px-6 overflow-hidden">
             <div className="max-w-6xl mx-auto text-center mb-16">
                 <motion.h2
                     initial={{ opacity: 0, y: 40 }}

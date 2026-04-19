@@ -20,7 +20,7 @@ export default function InstallSection() {
     };
 
     return (
-        <section className="py-24 px-6">
+        <section className="py-24 px-4 sm:px-6">
             <div className="max-w-4xl mx-auto text-center">
 
                 <h2 className="text-4xl font-bold mb-8">
@@ -46,7 +46,7 @@ export default function InstallSection() {
 
                 {/* Command */}
                 <div className="relative max-w-3xl mx-auto">
-                    <div className="relative bg-gradient-to-br from-slate-50 to-slate-100 text-slate-900 rounded-2xl px-8 py-6 flex items-center justify-between border border-slate-200 shadow-lg">
+                    <div className="relative bg-gradient-to-br from-slate-50 to-slate-100 text-slate-900 rounded-2xl px-4 sm:px-8 py-6 flex items-center justify-between gap-4 border border-slate-200 shadow-lg overflow-hidden">
 
                         <AnimatePresence mode="wait">
                             <motion.code
@@ -55,7 +55,7 @@ export default function InstallSection() {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
                                 transition={{ duration: 0.2 }}
-                                className="text-lg font-mono text-slate-800"
+                                className="text-sm sm:text-lg font-mono text-slate-800 truncate"
                             >
                                 {installs[active]}
                             </motion.code>
@@ -63,7 +63,7 @@ export default function InstallSection() {
 
                         <button
                             onClick={handleCopy}
-                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 transition-all duration-300 text-sm text-slate-700 font-medium"
+                            className="flex-shrink-0 flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 transition-all duration-300 text-sm text-slate-700 font-medium"
                         >
                             {copied ? <Check size={16} /> : <Copy size={16} />}
                             {copied ? "Copied" : "Copy"}

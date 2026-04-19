@@ -17,10 +17,10 @@ export default function Features() {
     ];
 
     return (
-        <section className="relative py-6 px-6 overflow-hidden">
+        <section className="relative py-6 px-4 sm:px-6 overflow-hidden">
 
-            {/* Background Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] bg-gradient-to-r from-blue-500/10 to-cyan-500/10 blur-3xl rounded-full -z-10" />
+            {/* Background Glow - contained */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-[500px] bg-gradient-to-r from-blue-500/10 to-cyan-500/10 blur-3xl rounded-full -z-10 pointer-events-none" />
 
             <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
 
