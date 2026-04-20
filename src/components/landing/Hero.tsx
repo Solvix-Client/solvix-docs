@@ -1,4 +1,4 @@
-import { Github, Heart, Book } from "lucide-react";
+import { Github, Heart, Book, Package } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "@docusaurus/Link";
 
@@ -89,6 +89,19 @@ export default function Hero() {
                     >
                         <Github size={18} />
                         View on GitHub
+                    </motion.a>
+
+                    {/* NPM */}
+                    <motion.a
+                        href="https://www.npmjs.com/package/@adityadev13/solvix"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.97 }}
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-[#CB3837] to-[#A52A2A] hover:from-[#B3302F] hover:to-[#8B1F1F] text-white font-semibold px-6 py-2 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto justify-center"
+                    >
+                        <Package size={18} />
+                        Install from NPM
                     </motion.a>
 
                     {/* Sponsor */}
