@@ -166,7 +166,7 @@ export default function Navbar() {
                                 GitHub
                             </a>
 
-                            <a
+                            {/* <a
                                 href="https://github.com/sponsors/solvix"
                                 target="_blank"
                                 className="mobile-link flex items-center gap-2"
@@ -174,7 +174,7 @@ export default function Navbar() {
                             >
                                 <Heart size={18} />
                                 Sponsor
-                            </a>
+                            </a> */}
 
                             {/* Theme Toggle Mobile */}
                             {mounted && (
