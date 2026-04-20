@@ -3,10 +3,10 @@ import { Copy, Check } from "lucide-react";
 import { useState } from "react";
 
 const installs = {
-    npm: "npm install solvix",
-    pnpm: "pnpm add solvix",
-    yarn: "yarn add solvix",
-    bun: "bun add solvix",
+    npm: "npm i @adityadev13/solvix",
+    pnpm: "pnpm add @adityadev13/solvix",
+    yarn: "yarn add @adityadev13/solvix",
+    bun: "bun add @adityadev13/solvix",
 };
 
 export default function InstallSection() {
