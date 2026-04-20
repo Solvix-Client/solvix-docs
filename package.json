@@ -1,6 +1,6 @@
 {
   "name": "solvix-docs",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "private": true,
   "description": "Official documentation website for Solvix - Universal Cross-Runtime HTTP Client.",
   "homepage": "https://solvix-client.github.io/solvix-docs/",

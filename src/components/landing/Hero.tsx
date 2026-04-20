@@ -12,7 +12,8 @@ export default function Hero() {
                 {/* Version Badge */}
                 <div className="flex flex-col items-center gap-4 mb-6">
 
-                    <motion.div
+                    <MotionLink
+                        to="/docs/changelog"
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
@@ -21,11 +22,11 @@ export default function Hero() {
               text-[#0FA38A] dark:text-[#1FD1B2]
               border border-[#1FD1B2]/30 
               text-sm font-medium backdrop-blur-md
-              hover:scale-105 transition-all duration-300 animate-[float_4s_ease-in-out_infinite]"
+              hover:scale-105 transition-all duration-300 animate-[float_4s_ease-in-out_infinite] cursor-pointer"
                     >
                         <span className="w-2 h-2 rounded-full bg-[#1FD1B2] animate-pulse"></span>
-                        v1.0.0-beta.1 • Current Release
-                    </motion.div>
+                        v1.0.0-beta.2 • Current Release
+                    </MotionLink>
 
                     {/* Title */}
                     <motion.h1

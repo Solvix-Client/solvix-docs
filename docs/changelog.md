@@ -8,6 +8,12 @@ All notable changes to this project will be documented in this file.
 
 This project follows a structured release approach with clear feature additions and improvements.
 
+## [v1.0.0-beta.2] - Documentation Updates
+
+### Updates
+
+- Updated shields and tags in README file
+
 ## [v1.0.0-beta.1] - Initial Release
 
 ### Overview
