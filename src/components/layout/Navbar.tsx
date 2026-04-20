@@ -58,14 +58,14 @@ export default function Navbar() {
                             GitHub
                         </a>
 
-                        <a
+                        {/* <a
                             href="https://opencollective.com/solvix"
                             target="_blank"
                             className="nav-link flex items-center gap-1"
                         >
                             <Heart size={16} />
                             Sponsor
-                        </a>
+                        </a> */}
 
                         {/* Theme Toggle */}
                         {mounted && (

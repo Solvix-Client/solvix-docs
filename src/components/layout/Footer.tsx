@@ -12,7 +12,7 @@ export default function Footer() {
                 <div className="flex items-center gap-8 text-sm text-gray-600 dark:text-gray-400">
                     <a href="https://github.com/Solvix-Client/solvix" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors flex items-center gap-1">GitHub<LucideExternalLink size={14} /></a>
                     <Link to="/docs" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors flex items-center gap-1">Documentation<LucideExternalLink size={14} /></Link>
-                    <a href="https://opencollective.com/solvix" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors flex items-center gap-1">Sponsor<LucideExternalLink size={14} /></a>
+                    {/* <a href="https://opencollective.com/solvix" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors flex items-center gap-1">Sponsor<LucideExternalLink size={14} /></a> */}
                 </div>
             </div>
         </footer>

@@ -91,7 +91,7 @@ export default function Hero() {
                     </motion.a>
 
                     {/* Sponsor */}
-                    <motion.a
+                    {/* <motion.a
                         href="https://opencollective.com/solvix"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -101,7 +101,7 @@ export default function Hero() {
                     >
                         <Heart size={18} />
                         Become a Sponsor
-                    </motion.a>
+                    </motion.a> */}
                 </motion.div>
             </div>
         </section>
