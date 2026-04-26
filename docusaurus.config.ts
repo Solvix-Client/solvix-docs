@@ -49,6 +49,10 @@ const config: Config = {
     [
       'classic',
       {
+        gtag: {
+          trackingID: 'G-EMXV9LN7LQ',
+          anonymizeIP: true,
+        },
         docs: {
           path: "docs",
           routeBasePath: "docs",
