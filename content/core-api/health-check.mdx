@@ -1,0 +1,67 @@
+---
+title: Health Checks
+description: Periodic endpoint health pinging with status callbacks. Built-in isHealthy() and stop() controls.
+---
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  baseURL: "https://api.example.com",
+  healthCheck: {
+    enabled: true,
+    endpoint: "/health",
+    intervalMs: 10000,     // Check every 10s
+  },
+});
+
+// Check health status
+console.log(client.healthCheck?.isHealthy()); // true/false
+
+// Stop health checks
+client.healthCheck?.stop();
+```
+
+## Configuration
+
+```ts
+interface HealthCheckOptions {
+  enabled?: boolean;
+  endpoint?: string;                // Default: "/health"
+  intervalMs?: number;              // Default: 30000 (30s)
+  timeoutMs?: number;               // Default: 5000 (5s)
+  onStatusChange?: (healthy: boolean) => void;
+}
+```
+
+## Health Events
+
+```ts
+import { SolvixBus } from "@adityadev13/solvix";
+
+SolvixBus.on("health:change", (event) => {
+  console.log(`Health: ${event.context.url} → ${event.context.healthy ? "UP" : "DOWN"}`);
+
+  if (!event.context.healthy) {
+    // Alert PagerDuty, update load balancer status, etc.
+  }
+});
+```
+
+## Health Check + Circuit Breaker
+
+When the health check detects a recovery, it can reset the circuit breaker faster than waiting for `resetTimeout`:
+
+```ts
+const client = createClient({
+  circuitBreaker: { failureThreshold: 5, resetTimeout: 30000 },
+  healthCheck: {
+    enabled: true,
+    endpoint: "/health",
+    intervalMs: 5000,
+    onStatusChange: (healthy) => {
+      if (healthy) console.log("Service recovered!");
+    },
+  },
+});
+```

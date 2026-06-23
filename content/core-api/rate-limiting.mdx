@@ -1,0 +1,185 @@
+---
+title: Rate Limiting
+description: Client-side token bucket rate limiter with adaptive server-side header sync. Prevent API quota exhaustion.
+---
+
+Solvix includes a **token bucket** rate limiter that prevents your application from exceeding API rate limits. It supports both client-side fixed limits and dynamic limits synced from server response headers.
+
+> **Rate limiting at the client prevents 429s before they happen.**
+
+## Basic Usage
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  rateLimit: {
+    capacity: 10,    // Max burst — 10 requests at once
+    refillRate: 5,   // Refill 5 tokens per interval
+    interval: 1000,  // Every 1 second
+  },
+});
+```
+
+This allows 10 immediate requests, then 5 requests per second after.
+
+## Configuration
+
+```ts
+interface RateLimitOptions {
+  /** Maximum bucket capacity (burst size). Default: 10 */
+  capacity: number;
+
+  /** Tokens added per interval. Default: 5 */
+  refillRate: number;
+
+  /** Refill interval in milliseconds. Default: 1000 (1s) */
+  interval: number;
+
+  /** Enable adaptive mode — syncs from response headers. Default: true */
+  adaptive?: boolean;
+
+  /** Header names to sync from (Response). Default: ["X-RateLimit-Remaining", "X-RateLimit-Reset"] */
+  headerRateLimit?: string[];
+
+  /** Header names to sync from (Response). Default: ["Retry-After"] */
+  headerRetryAfter?: string[];
+}
+```
+
+## How Token Bucket Works
+
+```
+Initial State: capacity = 10 (10 tokens available)
+
+Request 1:   consume 1 → 9 tokens remaining
+Request 2:   consume 1 → 8 tokens remaining
+...
+Request 10:  consume 1 → 0 tokens remaining
+Request 11:  WAIT for refill → 1 token available → consume → 0 remaining
+              ↓
+Every 1 second: add refillRate (5) tokens, up to capacity (10)
+```
+
+## Real-World Use Case: GitHub API
+
+GitHub allows 60 requests per hour for unauthenticated users and 5,000/hour with a token:
+
+```ts
+const client = createClient({
+  baseURL: "https://api.github.com",
+  rateLimit: {
+    capacity: 60,
+    refillRate: 1,
+    interval: 60000,  // 1 request per minute
+    adaptive: true,   // Sync from X-RateLimit-Remaining header
+  },
+});
+```
+
+When adaptive mode is on, Solvix reads `X-RateLimit-Remaining` and `X-RateLimit-Reset` from responses and adjusts the token bucket accordingly. If the server says you have fewer remaining requests, the bucket is reduced.
+
+## Adaptive Mode (Server-Side Sync)
+
+Many APIs return rate limit status in response headers:
+
+```
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 42
+X-RateLimit-Reset: 1372700873
+```
+
+With `adaptive: true`, Solvix automatically:
+1. Reads `X-RateLimit-Remaining` from each response
+2. Reduces the bucket to match the server's remaining count if lower
+3. Reads `Retry-After` on 429 responses and respects the wait time
+4. Adjusts refill rate to match actual server limits
+
+```ts
+const client = createClient({
+  rateLimit: {
+    capacity: 1000,
+    refillRate: 100,
+    interval: 60000,
+    adaptive: true,
+  },
+});
+```
+
+## Per-Host Rate Limiting
+
+Rate limiters are **per-host**, just like circuit breakers. Different APIs have independent buckets:
+
+```ts
+const client = createClient({
+  rateLimit: {
+    capacity: 100,
+    refillRate: 10,
+    interval: 1000,
+  },
+});
+
+// api.example.com has its own bucket
+await client.get("https://api.example.com/data");
+
+// api.another-service.com has a separate bucket
+await client.get("https://api.another-service.com/data");
+```
+
+## Rate Limit + Queue Priority
+
+Rate limited requests enter a wait queue. High-priority requests jump the line:
+
+```ts
+// Critical request — gets priority when tokens become available
+client.get("/payment", { priority: 1 });
+
+// Background request — waits until tokens are available
+client.get("/analytics", { priority: 10 });
+```
+
+## Error Handling
+
+When the bucket is empty and the queue is full:
+
+```ts
+try {
+  await client.get("/data");
+} catch (error) {
+  console.error(error.message);
+  // "Rate limit exceeded"
+}
+```
+
+## Rate Limit + Retry Integration
+
+When a 429 response comes back, the retry engine respects the `Retry-After` header:
+
+```ts
+const client = createClient({
+  retry: { retries: 3 },
+  rateLimit: {
+    capacity: 100,
+    refillRate: 10,
+    interval: 1000,
+    adaptive: true, // reads Retry-After from 429 responses
+  },
+});
+
+// If server returns 429 with "Retry-After: 30",
+// retry engine waits 30s before trying again
+```
+
+## Best Practices
+
+1. **Use adaptive mode** — server-side headers are more accurate than client-side estimates
+2. **Set realistic capacity** — higher than your expected peak, not lower
+3. **Monitor rate limit events** — `SolvixBus.on("request:error", ...)` for 429 detection
+4. **Combine with retry** — retry respects Retry-After headers from rate-limited responses
+5. **Per-service configuration** — different APIs have different limits; use separate clients or the per-host isolation
+
+## What's Next
+
+- [Circuit Breaker](/docs/core-api/circuit-breaker) — handle persistent failures
+- [Retry Engine](/docs/core-api/retry-engine) — automatic failure recovery
+- [Priority Queue](/docs/core-api/request-priority-queue) — control execution order

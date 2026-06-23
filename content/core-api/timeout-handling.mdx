@@ -1,0 +1,165 @@
+---
+title: Timeout Handling
+description: Configure request timeouts with AbortController. Global and per-request timeouts with timeout errors in the retry loop.
+---
+
+Solvix uses the Web `AbortController` API for timeout handling — the same mechanism used by native `fetch`. Timeouts are composable with retries, circuit breakers, and the full pipeline.
+
+## Basic Usage
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  timeout: 5000, // 5 seconds
+});
+
+// Throws if no response within 5 seconds
+await client.get("/slow-endpoint");
+```
+
+## Per-Request Timeout
+
+Override the global timeout for specific requests:
+
+```ts
+// Global timeout
+const client = createClient({ timeout: 5000 });
+
+// Slower endpoint — give it 30s
+await client.get("/report", { timeout: 30000 });
+
+// Critical health check — fail fast at 1s
+await client.get("/health", { timeout: 1000 });
+```
+
+## How It Works
+
+When a timeout is set, Solvix creates an `AbortController` with a timer:
+
+```ts
+// Simplified internally:
+const controller = new AbortController();
+const timer = setTimeout(() => controller.abort(), timeout);
+
+try {
+  const response = await fetch(url, { signal: controller.signal });
+  // ... parse response
+} catch (error) {
+  if (error.name === "AbortError") {
+    // Timeout occurred
+  }
+} finally {
+  clearTimeout(timer);
+}
+```
+
+## Timeout + Retry Integration
+
+Each retry attempt has its own fresh timeout:
+
+```ts
+const client = createClient({
+  timeout: 5000,    // Each attempt has 5s timeout
+  retry: { retries: 2 },
+});
+
+// Total possible time: 5s × 3 attempts = 15s max
+await client.get("/flaky-endpoint");
+```
+
+The timeout resets on each retry. A timeout error counts as a failure for the retry engine.
+
+## Timeout + Circuit Breaker
+
+Timeouts count as failures for the circuit breaker:
+
+```ts
+const client = createClient({
+  timeout: 3000,
+  circuitBreaker: {
+    failureThreshold: 5,
+    rollingWindow: 30000,
+  },
+});
+
+// If 5 requests timeout within 30s, circuit opens
+// Subsequent requests fail immediately instead of waiting 3s
+```
+
+This prevents the "slow death" scenario where many requests pile up waiting for timeouts.
+
+## Timeout Error Handling
+
+```ts
+try {
+  await client.get("/slow", { timeout: 1000 });
+} catch (error) {
+  if (error instanceof Error && error.name === "AbortError") {
+    console.log("Request timed out");
+  }
+}
+```
+
+`SolvixBus` also emits timeout errors:
+
+```ts
+import { SolvixBus } from "@adityadev13/solvix";
+
+SolvixBus.on("request:error", (event) => {
+  if (event.context.error?.name === "AbortError") {
+    console.warn(`⏱️ Timeout: ${event.context.url}`);
+  }
+});
+```
+
+## Real-World Use Cases
+
+### Staged Timeouts
+
+```ts
+// Try fast endpoint first (1s), fall back to slow endpoint (10s)
+const client = createClient({
+  timeout: 10000,
+  fallbackURLs: ["https://backup.example.com/api"],
+});
+
+// Critical path needs faster timeout
+try {
+  await client.get("/critical-data", { timeout: 500 });
+} catch {
+  // Use cached data
+  return getCachedData();
+}
+```
+
+### Progressive Timeouts
+
+```ts
+// Increase timeout with each retry (network gets worse)
+const client = createClient({
+  timeout: 2000,
+  retry: {
+    retries: 2,
+    shouldRetry: (error) => error.name === "AbortError",
+  },
+});
+
+// Attempt 1: 2s timeout
+// Retry 1: 2s timeout (server might be recovering)
+// Retry 2: 2s timeout
+```
+
+## Best Practices
+
+1. **Always set a timeout** — requests that hang forever exhaust connection pools
+2. **Match timeout to the endpoint** — slow reports need longer than health checks
+3. **Set timeouts lower than the circuit breaker window** — timeouts count as failures
+4. **Combine with retry** — a single timeout is often transient; retry once or twice
+5. **Don't set timeouts too low** — normal network variance can trigger false positives
+
+## What's Next
+
+- [Retry Engine](/docs/core-api/retry-engine) — automatic retry on timeout
+- [Circuit Breaker](/docs/core-api/circuit-breaker) — protect against persistent timeouts
+- [Fallback URLs](/docs/core-api/fallback-urls) — backup endpoints when timeout occurs

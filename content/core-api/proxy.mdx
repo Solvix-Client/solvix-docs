@@ -1,0 +1,48 @@
+---
+title: HTTP Proxy
+description: Route requests through an HTTP/HTTPS proxy. Supports authentication. Requires undici (Node.js only).
+---
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  baseURL: "https://api.example.com",
+  proxy: {
+    host: "gateway.corp.com",
+    port: 8080,
+  },
+});
+
+await client.get("/data"); // Routes through proxy
+```
+
+## Configuration
+
+```ts
+interface ProxyOptions {
+  host: string;
+  port: number;
+  auth?: { username: string; password: string };
+}
+```
+
+## With Authentication
+
+```ts
+const client = createClient({
+  proxy: {
+    host: "secure-proxy.corp.com",
+    port: 3128,
+    auth: { username: "user", password: "pass" },
+  },
+});
+```
+
+The proxy feature uses `undici`'s `ProxyAgent` under the hood. Install `undici` as a peer dependency to enable it.
+
+## Requirements
+
+- Node.js 18+
+- `undici` package installed (`npm install undici`)
+- Feature is automatically disabled when `undici` is not available

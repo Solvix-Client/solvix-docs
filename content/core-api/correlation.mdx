@@ -1,0 +1,18 @@
+---
+title: Correlation IDs
+description: Automatically assign a unique X-Request-ID header to every request. Trace requests across services.
+---
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  correlation: { enabled: true },
+});
+
+const res = await client.get("/users");
+console.log(res.meta.correlationId);
+// "req_abc123def456"
+```
+
+Every outgoing request gets a unique `X-Request-ID` header. The same ID appears in `res.meta.correlationId`, all log entries, and all `SolvixBus` events — making it easy to trace a single request across your entire stack.

@@ -1,0 +1,50 @@
+---
+title: Custom Retry Logic
+description: Define which errors trigger retries and implement custom retry conditions.
+---
+
+```ts
+const client = createClient({
+  retry: {
+    retries: 3,
+    shouldRetry: (error, ctx) => {
+      // Only retry on 5xx or network errors
+      if (error?.status >= 500) return true;
+      if (error?.code === "ECONNRESET") return true;
+      return false;
+    },
+  },
+});
+```
+
+## `shouldRetry` Signature
+
+```ts
+shouldRetry?: (error: unknown, ctx: SolvixContext) => boolean | Promise<boolean>;
+```
+
+- `error` — the error object (has `.status` for HTTP errors, `.name` for AbortError, etc.)
+- `ctx` — the full request context (access `ctx.meta.attemptNumber`, `ctx.url`, etc.)
+
+## Examples
+
+**Rate limit aware:**
+```ts
+shouldRetry: (error) => error?.status === 429
+```
+
+**Method-aware (GET only):**
+```ts
+shouldRetry: (error, ctx) => {
+  if (ctx.options.method === "GET") return error?.status >= 500;
+  return false;
+}
+```
+
+**Attempt-limit:**
+```ts
+shouldRetry: (error, ctx) => {
+  if (ctx.meta.attemptNumber >= 5) return false;
+  return error?.status >= 500;
+}
+```

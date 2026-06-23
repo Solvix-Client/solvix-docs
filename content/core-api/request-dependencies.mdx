@@ -1,0 +1,131 @@
+---
+title: Request Dependencies
+description: Chain requests so one waits for another. Useful for auth → data flows and sequential API calls.
+---
+
+Solvix supports dependency chains — you can declare that a request depends on another by its ID. The dependent request won't start until its dependency completes.
+
+> **No more manual `await auth()` before every request. Let the dependency engine handle ordering.**
+
+## Basic Usage
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({ baseURL: "https://api.example.com" });
+
+// Mark the auth request with an ID
+const authRes = await client.post("/auth", { username, password }, { id: "auth" });
+
+// Profile request depends on auth — waits for auth to complete
+const profileRes = await client.get("/profile", { dependsOn: ["auth"] });
+```
+
+## Multiple Dependencies
+
+A request can depend on multiple other requests:
+
+```ts
+// All three run in parallel
+client.get("/users", { id: "users" });
+client.get("/roles", { id: "roles" });
+client.get("/permissions", { id: "permissions" });
+
+// This waits for ALL three above
+const dashboard = await client.get("/dashboard", {
+  dependsOn: ["users", "roles", "permissions"],
+});
+```
+
+## Dependency Chain Visualization
+
+```
+Time →
+├── auth ────────────────────────────────────┐
+├── users ───────────────────────┐            │
+├── roles ───────────────────────┤            │
+│                                ↓            ↓
+│                         dashboard waits for auth + users + roles
+│                                ↓
+│                         dashboard ────────────────────────────→
+```
+
+## Complex Dependency Graph
+
+```ts
+// Tier 1: Auth
+client.post("/auth", { id: "auth" });
+
+// Tier 2: User data (depends on auth)
+client.get("/me", { id: "me", dependsOn: ["auth"] });
+client.get("/settings", { id: "settings", dependsOn: ["auth"] });
+
+// Tier 3: Dashboard (depends on user data)
+client.get("/dashboard", {
+  id: "dashboard",
+  dependsOn: ["me", "settings"],
+});
+```
+
+## Dependency + Dedup
+
+Dependencies integrate with deduplication. If multiple requests depend on the same ID, the dependency only resolves once:
+
+```ts
+// Both requests depend on "auth" — but auth runs only once
+const [profile, settings] = await Promise.all([
+  client.get("/profile", { dependsOn: ["auth"] }),
+  client.get("/settings", { dependsOn: ["auth"] }),
+]);
+```
+
+**Note:** The dependency ID (`"auth"`) must resolve before dependents can start. If you use `dependsOn` with an ID that never registers, the dependent request hangs.
+
+## Real-World Use Case: Multi-Step API Flow
+
+```ts
+// Step 1: Authenticate
+await client.post("/auth", { apiKey }, { id: "auth" });
+
+// Step 2: Create a resource (parallel with step 3)
+const [resource] = await Promise.all([
+  client.post("/resources", data, { id: "resource", dependsOn: ["auth"] }),
+]);
+
+// Step 3: Create audit log entry (parallel with step 2)
+await client.post("/audit", { action: "create", resourceId: resource.data.id }, {
+  id: "audit",
+  dependsOn: ["auth"],
+});
+
+// Step 4: Notify users — everything else must be done first
+await client.post("/notify", { resourceId: resource.data.id }, {
+  dependsOn: ["resource", "audit"],
+});
+```
+
+## Error Handling
+
+If a dependency fails, the dependent request fails immediately:
+
+```ts
+try {
+  await client.post("/auth", badCredentials, { id: "auth" });
+  // auth fails → dependency never resolves
+} catch (error) {
+  // auth error
+}
+
+// This request waits for auth, but auth already failed
+try {
+  await client.get("/profile", { dependsOn: ["auth"] });
+} catch (error) {
+  // "Dependency 'auth' failed" — thrown immediately
+}
+```
+
+## What's Next
+
+- [Dependency Registry](/docs/core-api/dependency-registry) — how dependencies are managed internally
+- [Request Grouping](/docs/core-api/request-grouping) — batch abort
+- [Priority Queue](/docs/core-api/request-priority-queue) — concurrency + ordering

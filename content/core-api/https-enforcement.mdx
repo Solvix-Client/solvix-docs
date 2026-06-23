@@ -1,0 +1,19 @@
+---
+title: HTTPS Enforcement
+description: Enforce HTTPS on all requests. Automatically rejects HTTP URLs. Always-on for client instances.
+---
+
+```ts
+const client = createClient({
+  security: {
+    enforceHTTPS: true, // Reject HTTP URLs
+  },
+});
+
+await client.get("http://insecure-api.com/data");
+// Throws: "HTTPS is required"
+```
+
+## Behavior
+
+When enabled, any request to an `http://` URL is rejected immediately — no network call is made. Relative URLs resolve against `baseURL` and use its protocol.

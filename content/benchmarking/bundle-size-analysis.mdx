@@ -1,0 +1,29 @@
+---
+title: Bundle Size Analysis
+description: Solvix bundle size — ESM, CJS, and gzip compared with Axios.
+---
+
+## Current Build Output
+
+| Format | Size |
+|--------|------|
+| ESM (`dist/index.js`) | 33.03 KB |
+| CJS (`dist/index.cjs`) | 33.94 KB |
+| DTS (`dist/index.d.ts`) | 23.42 KB |
+| Gzip | ~11 KB |
+
+## Comparison
+
+| Library | Gzip Size |
+|---------|-----------|
+| Axios | ~18–20 KB |
+| **Solvix** | **~11 KB** |
+
+Solvix delivers ~50 built-in features (retry, circuit breaker, rate limiting, deduplication, tracing, metrics, health checks, CSRF, SSO, etc.) at **roughly half the bundle size of Axios**.
+
+## Why So Small?
+
+- **Zero runtime dependencies** — no lodash, no tslib, no polyfills
+- **Tree-shakeable** — unused features don't add to the bundle
+- **Single-file build** — no code splitting overhead
+- **Web Crypto API** — uses built-in SHA-256 instead of a crypto library

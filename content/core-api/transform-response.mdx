@@ -1,0 +1,53 @@
+---
+title: Transform Response
+description: Transform the raw Response object before it's parsed. Useful for custom content negotiation or error extraction.
+---
+
+```ts
+const client = createClient({
+  transformResponse: async (response: Response) => {
+    // Extract error details from non-JSON error responses
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`API Error: ${text}`);
+    }
+    return response; // Continue normal parsing
+  },
+});
+```
+
+## Parameters
+
+- `response` — The raw `Response` object from the transport
+
+## Return Value
+
+Return a `Response` object to continue normal parsing, or return parsed data to skip parsing entirely.
+
+## Common Use Cases
+
+**Custom content type handling:**
+```ts
+transformResponse: async (res) => {
+  const ct = res.headers.get("content-type") || "";
+  if (ct.includes("protobuf")) {
+    const buf = await res.arrayBuffer();
+    return new Response(JSON.stringify(MyProto.decode(buf)), {
+      headers: { "content-type": "application/json" },
+    });
+  }
+  return res;
+}
+```
+
+**Error extraction from 200 responses:**
+```ts
+transformResponse: async (res) => {
+  if (res.ok) {
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return new Response(JSON.stringify(data), { status: 200 });
+  }
+  return res;
+}
+```

@@ -1,0 +1,174 @@
+---
+title: Streaming Support (SSE / JSON Lines)
+description: Parse Server-Sent Events and NDJSON streams with built-in support. Process data as it arrives.
+---
+
+Solvix has built-in support for streaming responses — **Server-Sent Events (SSE)**, **JSON Lines (NDJSON)**, and raw **ReadableStream** iteration.
+
+> **No external libraries needed. Solvix parses SSE and NDJSON natively.**
+
+## Basic Streaming
+
+Enable streaming mode:
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({ baseURL: "https://api.example.com" });
+
+const res = await client.get("/stream", {
+  responseType: "stream",
+  stream: true,
+});
+
+// Async iterate over chunks
+for await (const chunk of res.data) {
+  console.log("Chunk:", new TextDecoder().decode(chunk));
+}
+```
+
+## Server-Sent Events (SSE)
+
+Parse SSE streams with `sse: true`:
+
+```ts
+const client = createClient({ baseURL: "https://api.example.com" });
+
+await client.get("/events", { sse: true });
+// Events are automatically parsed:
+// data: {"event":"update","id":1}
+// → { event: "update", id: 1 }
+```
+
+## JSON Lines (NDJSON)
+
+Parse newline-delimited JSON with `parseJsonLines: true`:
+
+```ts
+const client = createClient({ baseURL: "https://api.example.com" });
+
+await client.get("/log-stream", { parseJsonLines: true });
+// Each line is parsed as JSON:
+// {"level":"info","msg":"started"}
+// {"level":"info","msg":"processing"}
+// → Each line parsed independently
+```
+
+## Real-World Use Case: Live Chat
+
+```ts
+const client = createClient({ baseURL: "https://chat.example.com" });
+
+// Listen for new messages via SSE
+async function listenForMessages(roomId: string) {
+  const res = await client.get(`/chat/${roomId}/stream`, {
+    sse: true,
+    timeout: 0, // No timeout — long-lived connection
+  });
+
+  for await (const chunk of res.data) {
+    const text = new TextDecoder().decode(chunk);
+
+    // Parse SSE format
+    for (const line of text.split("\n")) {
+      if (line.startsWith("data: ")) {
+        const data = JSON.parse(line.slice(6));
+        displayMessage(data);
+      }
+    }
+  }
+}
+```
+
+## Real-World Use Case: Progress Logs
+
+```ts
+const client = createClient({ baseURL: "https://api.example.com" });
+
+async function streamDeploymentLogs(deployId: string) {
+  const res = await client.get(`/deploy/${deployId}/logs`, {
+    parseJsonLines: true,
+    timeout: 300000, // 5 minutes for long deployment
+  });
+
+  for await (const chunk of res.data) {
+    const logLine = JSON.parse(new TextDecoder().decode(chunk));
+    console.log(`[${logLine.timestamp}] ${logLine.message}`);
+
+    if (logLine.status === "completed") break;
+  }
+}
+```
+
+## Manual Stream Parsing
+
+For full control over stream processing:
+
+```ts
+const res = await client.get("/large-file.ndjson", {
+  responseType: "stream",
+});
+
+const reader = res.data.getReader();
+const decoder = new TextDecoder();
+let buffer = "";
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+
+  buffer += decoder.decode(value, { stream: true });
+  const lines = buffer.split("\n");
+  buffer = lines.pop() || "";
+
+  for (const line of lines) {
+    if (line.trim()) {
+      const json = JSON.parse(line);
+      processLine(json);
+    }
+  }
+}
+```
+
+## Streaming + Progress
+
+Combine streaming with download progress:
+
+```ts
+const client = createClient({
+  hooks: {
+    onDownloadProgress: ({ loaded, total }) => {
+      console.log(`${loaded}/${total} bytes received`);
+    },
+  },
+});
+
+await client.get("/live-stream", {
+  responseType: "stream",
+  stream: true,
+});
+```
+
+## Important Notes
+
+| Runtime | Streaming Support |
+|---------|------------------|
+| Node.js 18+ | ✅ Full |
+| Browser (modern) | ✅ Full |
+| Deno | ✅ Full |
+| Bun | ✅ Full |
+| Edge (Workers) | ⚠️ Limited (no ReadableStream in all) |
+
+## Best Practices
+
+1. **Set `timeout: 0` for long-lived SSE connections** — prevents unwanted disconnection
+2. **Handle stream errors gracefully** — connections drop, implement reconnection logic
+3. **Use `sse: true` for standard SSE endpoints** — handles EventSource format automatically
+4. **Buffer partial lines** — NDJSON chunks may split in the middle of a line
+5. **Cancel streams with `ReadableStream.cancel()`** — clean up when done
+
+## What's Next
+
+- [Transform Request/Response](/docs/core-api/transform-request) — custom body processing
+- [Custom Transport](/docs/core-api/custom-transport) — replace the underlying fetch
+- [Progress Events](/docs/core-api/progress-events) — track upload/download progress

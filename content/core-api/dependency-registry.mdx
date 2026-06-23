@@ -1,0 +1,64 @@
+---
+title: Dependency Registry
+description: Internal dependency management system. Handles cleanup, eviction, and resolution of request dependencies at scale.
+---
+
+The Dependency Registry is the internal system that manages request IDs and their dependent requests. It ensures that dependent requests wait for their dependencies to complete, then resolve in order.
+
+> **You typically use this through `id` and `dependsOn` options. But understanding how it works helps with complex scenarios.**
+
+## How It Works
+
+```ts
+// 1. Request registers itself
+await client.get("/auth", { id: "auth" });
+// → Registry stores Promise for "auth"
+
+// 2. Another request declares dependency
+await client.get("/profile", { dependsOn: ["auth"] });
+// → Registry looks up "auth" Promise
+// → If resolved: immediately starts
+// → If pending: waits
+
+// 3. On failure, registry propagates error
+// → All dependents fail immediately
+```
+
+## Cleanup
+
+When a request resolves or rejects, its entry is cleaned up from the registry:
+
+```ts
+await client.get("/auth", { id: "auth" });
+// "auth" is now cleaned up from the registry
+
+// If another request depends on "auth" later:
+await client.get("/profile", { dependsOn: ["auth"] });
+// → Error: "Dependency 'auth' not found"
+```
+
+This means dependency IDs are **one-use per session** for pending tracking. If the ID has already resolved, the dependent runs immediately.
+
+## Memory Safety
+
+The registry has a **10,000 entry limit** with FIFO eviction to prevent memory leaks:
+
+```ts
+// In long-running processes with many unique IDs:
+for (let i = 0; i < 20000; i++) {
+  await client.get(`/items/${i}`, { id: `item-${i}` });
+}
+// Oldest entries are evicted when cache exceeds 10k
+```
+
+## Best Practices
+
+1. **Keep dependency chains shallow** — deep chains (5+ levels) are hard to debug
+2. **Always handle dependency errors** — a failed dependency kills all dependents
+3. **Avoid ID collisions** — use descriptive IDs like `"auth-{userId}"` not `"auth"`
+4. **Clean up completed chains** — dependencies are one-shot; create new IDs for new flows
+
+## What's Next
+
+- [Request Dependencies](/docs/core-api/request-dependencies) — using the dependency system
+- [Request Grouping](/docs/core-api/request-grouping) — batch abort

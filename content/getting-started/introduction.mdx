@@ -1,0 +1,71 @@
+---
+title: Introduction
+description: Solvix is a TypeScript-first HTTP orchestration engine with 50+ built-in features for production systems.
+---
+
+Solvix is a **TypeScript-first HTTP orchestration engine** — not just an HTTP client. It transforms simple API requests into secure, observable, resilient, and fully controlled execution pipelines.
+
+Unlike traditional HTTP clients (Axios, Got, Ky) that leave resilience, security, and observability to the developer, Solvix bakes ~50 features into a single 33 KB package.
+
+## What Solvix Solves
+
+Production API communication is never simple. Real systems need:
+
+- **Resilience** — retries with backoff, circuit breakers, rate limiting, request deduplication
+- **Security** — HTTPS enforcement, domain allowlisting, header sanitization, CSRF protection, size guards
+- **Observability** — distributed tracing, correlation IDs, aggregated metrics, health checks, request timelines, structured logging
+- **Control** — priority queues, dependency chains, request groups, offline queuing, shadow testing
+- **Extensibility** — custom middleware, custom transports, request/response transformers, custom retry logic
+
+Most libraries leave these to the developer. Solvix integrates them into a single cohesive pipeline.
+
+## Quick Example
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const api = createClient({
+  baseURL: "https://api.example.com",
+  timeout: 5000,
+  retry: { retries: 3 },
+  circuitBreaker: { failureThreshold: 5, resetTimeout: 15000 },
+  dedupe: true,
+  logger: console,
+});
+
+const res = await api.get("/users");
+// res.data is typed, res.meta has timeline + profiling
+```
+
+## Key Capabilities
+
+| Category | Features |
+|----------|----------|
+| **Security** | CRLF protection, HTTPS enforcement, domain/method allowlisting, header sanitization, body/response size guards, snapshot redaction, CSRF protection |
+| **Resilience** | Retry with exponential backoff + jitter, circuit breaker (per-host), rate limiter (token bucket + adaptive), priority queue, request deduplication, fallback URLs |
+| **Observability** | W3C trace context, correlation IDs, aggregated metrics (counters + histograms), request timeline (15 stages), performance profiling, health checks, structured logging, global event bus |
+| **Data Handling** | JSON, form, multipart, text, Blob, ArrayBuffer body types; SSE, JSON Lines, raw stream parsing; request/response transformers; response validation (Zod/Valibot compatible) |
+| **Auth & Caching** | Token refresh (stampede-safe), ETag conditional requests, in-memory response caching, cookie jar |
+| **Infrastructure** | HTTP/HTTPS proxy, custom TLS (mTLS, self-signed CAs), custom transport, custom middleware, offline queue, shadow requests |
+
+## Runtimes
+
+- Node.js 18+
+- Modern browsers (Chrome, Firefox, Safari, Edge)
+- Deno, Bun
+- Edge runtimes (Cloudflare Workers, Vercel Edge)
+
+## Bundle Size
+
+| Format | Size |
+|--------|------|
+| ESM | 33 KB |
+| CJS | 34 KB |
+| Gzip | ~11 KB |
+
+## Next Steps
+
+- [Quick Start](/docs/getting-started/quick-start) — build your first client in 2 minutes
+- [Installation](/docs/getting-started/installation) — install via npm, pnpm, yarn, or bun
+- [Configuration Overview](/docs/getting-started/configuration-overview) — all available options
+- [Retry Engine](/docs/core-api/retry-engine) — configure automatic retries

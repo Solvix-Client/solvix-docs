@@ -1,0 +1,23 @@
+---
+title: Performance Metadata
+description: All performance-related data available in the response — timing, retry counts, and metadata.
+---
+
+Every response includes `res.meta` with performance information:
+
+```ts
+const res = await client.get("/data");
+
+res.meta.startTime;     // Unix timestamp (ms) — when the request started
+res.meta.duration;      // Total wall-clock time in ms
+res.meta.retryCount;    // Number of retries that occurred
+res.meta.attemptNumber; // Which attempt this was (starts at 1)
+
+// With timeline:
+res.meta.timeline;      // 15-stage timestamp array
+
+// With profiling:
+res.meta.profile;       // Summary statistics
+```
+
+These are always available regardless of feature configuration — `retryCount` and `duration` are collected on every request.

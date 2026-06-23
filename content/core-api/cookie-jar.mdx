@@ -1,0 +1,22 @@
+---
+title: Cookie Jar
+description: In-memory cookie storage for Node.js and edge runtimes. Parses Set-Cookie, sends Cookie automatically.
+---
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  baseURL: "https://api.example.com",
+  cookieJar: { enabled: true },
+});
+
+// First request — server sets cookies
+await client.get("/auth");
+
+// Subsequent requests — cookies sent automatically
+await client.get("/profile");
+// → Cookie header includes session and tokens
+```
+
+The cookie jar stores cookies from `Set-Cookie` response headers and attaches them to subsequent requests for the same domain. Useful in Node.js and edge environments where there's no browser cookie storage.

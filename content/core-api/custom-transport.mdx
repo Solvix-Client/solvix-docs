@@ -1,0 +1,179 @@
+---
+title: Custom Transport
+description: Replace the default fetch with a custom transport. Supports HTTP/2, mock, logging, or any custom adapter.
+---
+
+The `transport` option lets you replace the default `fetch` implementation with a custom function. This is useful for HTTP/2, request mocking, logging proxies, or any custom network adapter.
+
+> **Swap out the entire HTTP layer without changing application code.**
+
+## Basic Usage
+
+```ts
+import { createClient, type SolvixTransport } from "@adityadev13/solvix";
+
+const loggingTransport: SolvixTransport = async (url, init) => {
+  console.log(`→ ${init.method} ${url}`);
+  const start = Date.now();
+  const response = await fetch(url, init);
+  console.log(`← ${response.status} (${Date.now() - start}ms)`);
+  return response;
+};
+
+const client = createClient({
+  baseURL: "https://api.example.com",
+  transport: loggingTransport,
+});
+```
+
+## Type Signature
+
+```ts
+type SolvixTransport = (
+  url: string,
+  init: RequestInit
+) => Promise<Response>;
+```
+
+The transport receives the **resolved URL** (with baseURL and params applied) and the **fetch init** (with headers, body, signal). It must return a `Response` object.
+
+## Real-World Use Cases
+
+### Request Mocking (Testing)
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+import type { SolvixTransport } from "@adityadev13/solvix";
+
+// Mock transport for tests
+function createMockTransport(responses: Map<string, Response>): SolvixTransport {
+  return async (url, init) => {
+    const mockResponse = responses.get(url);
+    if (mockResponse) return mockResponse;
+    return new Response(JSON.stringify({ error: "not found" }), { status: 404 });
+  };
+}
+
+// In test:
+const mockResponses = new Map([
+  ["/users", new Response(JSON.stringify([{ id: 1 }]), { status: 200 })],
+]);
+
+const client = createClient({
+  transport: createMockTransport(mockResponses),
+});
+
+const res = await client.get("/users");
+console.log(res.data); // [{ id: 1 }]
+```
+
+### HTTP/2 Transport (Node.js)
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+import { request } from "http2";
+
+const http2Transport: SolvixTransport = async (url, init) => {
+  const { hostname, pathname, search } = new URL(url);
+  const session = connect(`https://${hostname}`);
+
+  return new Promise((resolve, reject) => {
+    const req = session.request({
+      ":path": pathname + search,
+      ":method": init.method || "GET",
+      ...Object.fromEntries(new Headers(init.headers || {})),
+    });
+
+    const chunks: Buffer[] = [];
+    req.on("data", (chunk) => chunks.push(chunk));
+    req.on("end", () => {
+      const body = Buffer.concat(chunks);
+      resolve(new Response(body, { status: 200 }));
+      session.close();
+    });
+    req.on("error", reject);
+
+    if (init.body) req.write(init.body);
+    req.end();
+  });
+};
+
+const client = createClient({ transport: http2Transport });
+```
+
+### Retry with Circuit Breaker in Transport
+
+```ts
+let failureCount = 0;
+
+const resilientTransport: SolvixTransport = async (url, init) => {
+  if (failureCount > 5) {
+    throw new Error("Custom circuit breaker open");
+  }
+
+  try {
+    const response = await fetch(url, init);
+    failureCount = 0;
+    return response;
+  } catch (error) {
+    failureCount++;
+    throw error;
+  }
+};
+```
+
+### Request Timing Transport
+
+```ts
+const timingTransport: SolvixTransport = async (url, init) => {
+  const start = performance.now();
+  try {
+    const response = await fetch(url, init);
+    const duration = performance.now() - start;
+
+    // Collect timing metrics
+    timingHistogram.observe({ method: init.method, url: url.split("?")[0] }, duration);
+
+    return response;
+  } catch (error) {
+    const duration = performance.now() - start;
+    console.error(`Failed after ${duration.toFixed(0)}ms: ${url}`);
+    throw error;
+  }
+};
+```
+
+## Transport + Middleware
+
+The transport is the **last stage** in the pipeline — after middleware, after security checks, after everything. It receives the fully prepared URL and init object.
+
+```
+Security → Queue → Rate Limit → Circuit Breaker → Retry Loop
+                                                      ↓
+                                              Middleware Stack
+                                                      ↓
+                                              Transport (fetch/custom)
+```
+
+## Built-in Transports
+
+Solvix ships with one built-in transport:
+
+| Transport | Runtime | Requires | Use Case |
+|-----------|---------|----------|----------|
+| Default `fetch` | All | Nothing | Standard HTTP |
+| Node.js Proxy/TLS | Node.js 18+ | `undici` | Corporate proxies, mTLS |
+
+## Best Practices
+
+1. **Keep the transport focused** — it should only handle the network layer, not business logic
+2. **Use middleware for transformations** — not transport
+3. **Return a proper `Response` object** — Solvix parses it based on `responseType`
+4. **Handle errors properly** — throw or return error responses; don't swallow failures
+5. **Test transports in isolation** — mock at the transport level for unit tests
+
+## What's Next
+
+- [Middleware System](/docs/core-api/middleware-system) — modify requests/responses in the pipeline
+- [Proxy Configuration](/docs/core-api/proxy) — HTTP proxy via undici
+- [TLS/SSL](/docs/core-api/tls) — custom TLS configuration

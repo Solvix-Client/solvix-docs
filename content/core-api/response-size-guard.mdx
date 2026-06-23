@@ -1,0 +1,17 @@
+---
+title: Response Size Guard
+description: Reject responses larger than a configured limit. Prevents memory exhaustion from large responses.
+---
+
+```ts
+const client = createClient({
+  security: {
+    maxResponseSize: 10_000_000, // 10 MB
+  },
+});
+
+// Throws if Content-Length header exceeds 10MB
+await client.get("/large-file");
+```
+
+The guard checks the `Content-Length` header before reading the body. If no `Content-Length` is present (e.g., chunked transfer encoding), the body is still read but limited to `maxResponseSize`.

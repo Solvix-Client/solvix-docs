@@ -1,0 +1,41 @@
+---
+title: Metrics
+description: Aggregated request metrics — total, active, success, failure, retry counters, and duration histogram.
+---
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  metrics: { enabled: true },
+});
+
+// Make some requests
+await client.get("/users");
+await client.get("/posts");
+
+// Get metrics snapshot
+const m = client.metrics();
+console.log(m);
+// {
+//   totalRequests: 2,
+//   activeRequests: 0,
+//   successCount: 2,
+//   failureCount: 0,
+//   retryCount: 0,
+//   durationHistogram: { "0-100": 1, "100-500": 1, "500+": 0 },
+// }
+```
+
+## Metrics Available
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `totalRequests` | `number` | Total requests made |
+| `activeRequests` | `number` | Currently in-flight |
+| `successCount` | `number` | Successful (2xx) responses |
+| `failureCount` | `number` | Failed responses |
+| `retryCount` | `number` | Total retries |
+| `durationHistogram` | `Record<string, number>` | Response time buckets |
+
+Use `client.metrics()` to get a snapshot at any time. Useful for dashboards, health endpoints, and monitoring.

@@ -1,0 +1,30 @@
+---
+title: Header Sanitization
+description: Automatically strip dangerous headers from outgoing requests. Protects against CRLF injection and header smuggling.
+---
+
+Solvix sanitizes request headers on every request — **always on, no configuration needed**.
+
+## Always Stripped
+
+| Header | Reason |
+|--------|--------|
+| `Host` | Set automatically by the runtime |
+| `Connection` | Forbidden — managed by HTTP stack |
+| `Transfer-Encoding` | Can be used for request smuggling |
+| `Content-Length` | Set automatically from body |
+
+## Configurable
+
+With `security` options:
+
+```ts
+const client = createClient({
+  security: {
+    maskSensitiveHeaders: true,  // Redact in logs/snapshots
+    blockInsecureHeaders: true,  // Strip Authorization, Cookie, X-Api-Key
+  },
+});
+```
+
+CRLF injection (`\r\n` in header values) is always blocked — headers containing `\r` or `\n` are removed automatically.

@@ -1,0 +1,34 @@
+---
+title: Benchmark Overview
+description: Performance benchmarks for Solvix — throughput, concurrency, memory, deduplication, retry storm, and bundle size.
+---
+
+This section documents real benchmark results for Solvix compared to native `fetch` and Axios.
+
+## Test Environment
+
+| Property | Value |
+|----------|-------|
+| Runtime | Node.js v24.15.0 |
+| Tool | tinybench |
+| Duration per test | 2 seconds |
+| Machine | macOS (Apple Silicon) |
+
+## Quick Summary
+
+| Metric | Result |
+|--------|--------|
+| Minimal client overhead | 181K ops/s (~0.006ms avg) |
+| Full enterprise config | 46K ops/s (~0.022ms avg) |
+| Concurrency (100 parallel) | 2,012 ops/s |
+| Memory stability | Stable after initial allocation (~8.8 MB) |
+| Deduplication | 1000 requests → 1 network call |
+| Bundle size (ESM) | 33 KB (11 KB gzip) |
+
+Solvix adds ~0.02ms overhead in full enterprise mode — roughly **0.02%** of a typical 100ms network request. The relative cost is negligible in real-world usage.
+
+## What's Next
+
+- [Memory Stability](/docs/benchmarking/memory-stability-test) — detailed memory analysis
+- [Concurrency Test](/docs/benchmarking/concurrency-test) — burst handling
+- [Retry Storm Test](/docs/benchmarking/retry-storm-test) — failure resilience

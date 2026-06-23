@@ -1,0 +1,42 @@
+---
+title: Using Solvix with React
+description: Best practices for using Solvix in React applications — hooks, caching, and request lifecycle management.
+---
+
+```tsx
+import { createClient } from "@adityadev13/solvix";
+import { useState, useEffect } from "react";
+
+const api = createClient({
+  baseURL: "https://api.example.com",
+  dedupe: true,        // Deduplicate concurrent requests
+  cache: { ttl: 30000 }, // Cache responses for 30s
+  timeline: { enabled: true },
+});
+
+function useData<T>(url: string) {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    api.get<T>(url).then(res => {
+      if (!cancelled) {
+        setData(res.data);
+        setLoading(false);
+      }
+    }).catch(err => {
+      if (!cancelled) {
+        setError(err);
+        setLoading(false);
+      }
+    });
+
+    return () => { cancelled = true; };
+  }, [url]);
+
+  return { data, loading, error };
+}
+```

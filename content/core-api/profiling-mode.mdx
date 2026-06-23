@@ -1,0 +1,34 @@
+---
+title: Profiling Mode
+description: Automated performance profiling — queue wait, network time, parse time, and total duration in a single summary.
+---
+
+```ts
+const client = createClient({
+  profiling: { enabled: true },
+});
+
+const res = await client.get("/users");
+console.log(res.meta.profile);
+// {
+//   totalMs: 332,        // Total wall-clock time
+//   queueWaitMs: 1,      // Time spent in priority queue
+//   rateLimitWaitMs: 0,  // Time waiting for rate limit
+//   networkMs: 300,      // fetch() duration
+//   parseMs: 0.5,        // Response parsing time
+//   validationMs: 0.1,   // validateResponse time
+//   retryCount: 0,       // Number of retries
+// }
+```
+
+Profile metrics are computed from the timeline automatically. Enable both for maximum insight.
+
+## Where Time Goes
+
+```ts
+const profile = (await client.get("/slow-endpoint")).meta.profile;
+if (profile) {
+  console.log(`Network: ${profile.networkMs}ms (${(profile.networkMs / profile.totalMs * 100).toFixed(0)}%)`);
+  console.log(`Queue: ${profile.queueWaitMs}ms (${(profile.queueWaitMs / profile.totalMs * 100).toFixed(0)}%)`);
+}
+```

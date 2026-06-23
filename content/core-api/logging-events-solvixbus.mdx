@@ -1,0 +1,133 @@
+---
+title: Global Event Bus (SolvixBus)
+description: Subscribe to request lifecycle events globally. Monitor start, complete, error, retry, and health events across all clients.
+---
+
+`SolvixBus` is a singleton event bus that emits typed events for every request lifecycle stage. Subscribe once, monitor everything.
+
+> **Stop adding console.log to every route handler. Subscribe to SolvixBus once and get every request event.**
+
+## Basic Usage
+
+```ts
+import { SolvixBus } from "@adityadev13/solvix";
+
+SolvixBus.on("request:complete", (event) => {
+  console.log(`✓ ${event.context.url} → ${event.context.response?.status}`);
+});
+
+SolvixBus.on("request:error", (event) => {
+  console.error(`✗ ${event.context.url}: ${event.context.error}`);
+});
+```
+
+## Available Events
+
+| Event | Payload | When |
+|-------|---------|------|
+| `request:start` | Full context | Request enters pipeline |
+| `request:retry` | Full context + meta | Before retry attempt |
+| `request:complete` | Full context + response | Successful response |
+| `request:error` | Full context + error | Permanent failure |
+| `health:change` | Health status | Health check status changes |
+| `request:shadowStart` | Context | Shadow request started |
+| `request:shadowComplete` | Context + response | Shadow completed |
+| `request:shadowDifference` | Both responses | Primary vs shadow differ |
+| `request:shadowError` | Context + error | Shadow failed |
+
+## Real-World Use Cases
+
+### Metrics Collection
+
+```ts
+const metrics = { total: 0, success: 0, failure: 0, duration: 0 };
+
+SolvixBus.on("request:start", () => metrics.total++);
+SolvixBus.on("request:complete", (e) => {
+  metrics.success++;
+  metrics.duration += e.context.meta.duration;
+});
+SolvixBus.on("request:error", () => metrics.failure++);
+
+// Report every 60s
+setInterval(() => {
+  console.log("Request metrics:", metrics);
+}, 60000);
+```
+
+### Sentry/Error Tracking Integration
+
+```ts
+SolvixBus.on("request:error", (event) => {
+  Sentry.captureException(event.context.error, {
+    tags: {
+      url: event.context.url,
+      correlationId: event.context.meta.correlationId,
+      retryCount: event.context.meta.retryCount,
+    },
+  });
+});
+```
+
+### Request Logging Dashboard
+
+```ts
+SolvixBus.on("request:start", (e) => {
+  performance.mark(`start-${e.context.meta.correlationId}`);
+});
+
+SolvixBus.on("request:complete", (e) => {
+  performance.mark(`end-${e.context.meta.correlationId}`);
+  performance.measure(
+    `req-${e.context.meta.correlationId}`,
+    `start-${e.context.meta.correlationId}`,
+    `end-${e.context.meta.correlationId}`
+  );
+});
+```
+
+### Health Check Monitoring
+
+```ts
+SolvixBus.on("health:change", (event) => {
+  const { healthy, endpoint } = event.context;
+  console.log(`Health check: ${endpoint} → ${healthy ? "UP" : "DOWN"}`);
+});
+```
+
+## Event Object Shape
+
+```ts
+interface SolvixEvent {
+  type: SolvixEventType;
+  context?: SolvixContext<any>;
+  timestamp: number;
+}
+```
+
+## Cleanup
+
+Remove listeners when they're no longer needed:
+
+```ts
+function onError(event) {
+  console.error(event.context.error);
+}
+
+SolvixBus.on("request:error", onError);
+// Later:
+SolvixBus.off("request:error", onError);
+```
+
+## Best Practices
+
+1. **Subscribe once at app boot** — SolvixBus is a singleton, subscribe in your app setup code
+2. **Don't mutate the event context** — it's a snapshot; use middleware or hooks for modifications
+3. **Keep listeners fast** — they run synchronously; slow listeners delay the event loop
+4. **Handle errors in listeners** — SolvixBus catches errors, but you won't see them without your own try/catch
+
+## What's Next
+
+- [Hooks](/docs/core-api/hooks) — per-client lifecycle callbacks
+- [Metrics](/docs/core-api/metrics) — aggregate request statistics
+- [Correlation IDs](/docs/core-api/correlation) — auto-assign request IDs

@@ -1,0 +1,163 @@
+---
+title: Token Refresh Orchestrator
+description: Automatic token refresh with stampede protection. 100 concurrent 401s → 1 refresh call.
+---
+
+The Token Refresh Orchestrator automatically handles 401 responses by refreshing the auth token and retrying the original request. It's **stampede-safe** — if 100 requests get 401 simultaneously, only one refresh call is made.
+
+> **Stop writing token refresh wrappers. Solvix handles the 401 → refresh → retry flow automatically.**
+
+## Basic Usage
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  auth: {
+    refreshToken: async () => {
+      const res = await fetch("/auth/refresh", {
+        method: "POST",
+        credentials: "include",
+      });
+      const { token } = await res.json();
+      return token;
+    },
+    attachToken: (token, ctx) => {
+      ctx.options.headers = {
+        ...ctx.options.headers,
+        Authorization: `Bearer ${token}`,
+      };
+    },
+  },
+});
+```
+
+## Configuration
+
+```ts
+interface AuthOptions {
+  /** Async function that returns a new token */
+  refreshToken: () => Promise<string>;
+
+  /** Attach the token to the request context. Runs on every request and on retry. */
+  attachToken: (token: string, ctx: SolvixContext) => void;
+
+  /** Determine if an error should trigger a refresh. Default: status === 401 */
+  shouldRefresh?: (error: any) => boolean;
+}
+```
+
+## How It Works
+
+```
+1. Request sent with Authorization header (via attachToken)
+2. Response: 401 Unauthorized
+3. shouldRefresh(error) → true
+4. Check if another request is already refreshing:
+   ├── Yes → wait for that refresh to complete
+   └── No  → call refreshToken()
+5. attachToken(newToken, ctx) — update context headers
+6. Retry the original request
+7. If refresh fails → propagate error to all waiting requests
+```
+
+## Real-World Use Case: SPA Auth
+
+```ts
+const client = createClient({
+  baseURL: "https://api.example.com",
+  auth: {
+    refreshToken: async () => {
+      // Call your auth server's refresh endpoint
+      const res = await fetch("https://auth.example.com/refresh", {
+        method: "POST",
+        credentials: "include", // sends httpOnly refresh cookie
+      });
+
+      if (!res.ok) {
+        // Refresh failed — redirect to login
+        window.location.href = "/login";
+        throw new Error("Session expired");
+      }
+
+      const { accessToken } = await res.json();
+      return accessToken;
+    },
+    attachToken: (token, ctx) => {
+      ctx.options.headers = {
+        ...ctx.options.headers,
+        Authorization: `Bearer ${token}`,
+      };
+    },
+  },
+});
+```
+
+## Stampede Protection
+
+```ts
+// 100 concurrent requests, all with expired tokens:
+const results = await Promise.all(
+  Array.from({ length: 100 }, () => client.get("/protected"))
+);
+
+// refreshToken() was called only ONCE
+// All 100 requests were retried with the new token
+```
+
+## Token Refresh + Retry Integration
+
+The refresh happens inside the retry loop. If `retry` is configured, Solvix will:
+1. Get 401 → refresh token → retry
+2. If retry also gets 401 → refresh again (up to retry count)
+
+```ts
+const client = createClient({
+  retry: { retries: 2 },
+  auth: {
+    refreshToken: async () => getNewToken(),
+    attachToken: (token, ctx) => {
+      ctx.options.headers.Authorization = `Bearer ${token}`;
+    },
+  },
+});
+
+// Token expired → refresh → retry → success
+// Worst case: refresh → retry 401 → refresh → retry → success (2 refreshes)
+```
+
+## Hook Integration
+
+Receive notifications when refresh happens:
+
+```ts
+const client = createClient({
+  auth: {
+    refreshToken: async () => fetchNewToken(),
+    attachToken: (token, ctx) => {
+      ctx.options.headers.Authorization = `Bearer ${token}`;
+    },
+  },
+  hooks: {
+    onRetry: (ctx) => {
+      if (ctx.options.auth) {
+        console.log("🔄 Token refresh triggered for", ctx.url);
+      }
+    },
+  },
+});
+```
+
+## Best Practices
+
+1. **Always set `shouldRefresh` for non-401 auth errors** — some APIs use 403 for expired tokens
+2. **Handle refresh failure** — redirect to login, clear session, etc.
+3. **Use `credentials: "include"`** for refresh endpoints with httpOnly cookies
+4. **Combine with `retry`** — allows multiple refresh attempts if the auth server is flaky
+5. **Monitor refresh events** — frequent refreshes indicate short-lived tokens or clock drift
+
+## What's Next
+
+- [Retry Engine](/docs/core-api/retry-engine) — automatic failure recovery
+- [Hooks](/docs/core-api/hooks) — lifecycle callbacks
+- [Logging & Events](/docs/core-api/logging-events-solvixbus) — event monitoring

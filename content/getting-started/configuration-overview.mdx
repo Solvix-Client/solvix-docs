@@ -1,0 +1,136 @@
+---
+title: Configuration Overview
+description: All Solvix options explained — global client options and per-request overrides.
+---
+
+Solvix options are grouped into two levels:
+
+1. **Global options** — passed to `createClient({...})`, apply to every request
+2. **Per-request options** — passed to `client.get(url, {...})`, override globals for a single request
+
+Both use the same `SolvixOptions` interface. Every field is optional.
+
+## Core Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `baseURL` | `string` | — | Base URL prepended to all relative request URLs |
+| `timeout` | `number` | — | Request timeout in milliseconds |
+| `method` | `HttpMethod` | auto | HTTP method (auto-set by get/post/put/etc.) |
+| `headers` | `Record<string,string>` | `{}` | Default headers for every request |
+| `params` | `Record<string,any>` | — | URL query parameters |
+| `body` | `unknown` | — | Request body |
+| `bodyType` | `BodyType` | `"json"` | How to serialize body: `json`, `form`, `multipart`, `text`, `blob`, `arrayBuffer`, `raw` |
+| `responseType` | `ResponseType` | `"json"` | How to parse response: `json`, `text`, `blob`, `arrayBuffer`, `formData`, `stream`, `raw` |
+| `paramsSerializer` | `(params) => string` | — | Custom query parameter serializer |
+| `validateStatus` | `(status) => boolean` | `status >= 200 && < 300` | Determine if status is an error |
+| `validateResponse` | `(data) => any` | — | Validate response data (Zod/Valibot compatible) |
+
+## Resilience Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `retry` | `number \| RetryOptions` | `{ retries: 0 }` | Retry configuration with exponential backoff |
+| `circuitBreaker` | `CircuitBreakerOptions` | — | Per-host failure protection |
+| `rateLimit` | `RateLimitOptions` | — | Token bucket rate limiter |
+| `dedupe` | `boolean` | `false` | Deduplicate in-flight requests |
+| `cache` | `boolean \| CacheOptions` | — | In-memory response caching |
+| `maxConcurrency` | `number` | `Infinity` | Max concurrent requests |
+| `priority` | `number` | `5` | Queue priority (lower = higher) |
+| `queue` | `QueueOptions` | — | Queue behavior (max size, strategy) |
+| `fallbackURLs` | `string[]` | — | Backup URLs when primary fails |
+| `fingerprint` | `FingerprintOptions` | — | Customize dedup/cache key generation |
+
+## Security Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `security` | `SecurityOptions` | — | HTTPS, domain/method allowlisting, size guards |
+| `csrf` | `CSRFOptions` | — | CSRF token injection |
+| `tls` | `TLSOptions` | — | TLS/SSL config (requires undici) |
+| `proxy` | `ProxyOptions` | — | HTTP proxy (requires undici) |
+| `allowedOrigins` | `string[]` | — | Allowed CORS origins |
+| `avoidPreflight` | `boolean` | — | Keep requests simple to avoid preflight |
+
+## Observability Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `timeline` | `TimelineOptions` | — | Request stage timeline (15 stages) |
+| `profiling` | `ProfilingOptions` | — | Performance profiling summary |
+| `logger` | `SolvixLogger` | — | Structured logger (pino, winston, console) |
+| `correlation` | `CorrelationOptions` | — | Auto X-Request-ID header |
+| `metrics` | `MetricsOptions` | — | Aggregated counters + histograms |
+| `tracing` | `TracingOptions` | — | W3C traceparent header |
+| `healthCheck` | `HealthCheckOptions` | — | Periodic endpoint health pinging |
+| `snapshot` | `SnapshotOptions` | — | Capture request snapshot for debugging |
+| `devMode` | `boolean` | — | Dev-mode warnings for misconfigurations |
+
+## Auth Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `auth` | `AuthOptions` | — | Token refresh orchestration |
+| `cookieJar` | `CookieJarOptions` | — | In-memory cookie storage |
+| `etag` | `ETagOptions` | — | Conditional GET with ETag |
+
+## Advanced Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `hooks` | `SolvixHooks` | — | Lifecycle hooks |
+| `transport` | `SolvixTransport` | — | Custom transport function |
+| `transformRequest` | `(body, headers) => any` | — | Transform request body |
+| `transformResponse` | `(response) => any` | — | Transform response |
+| `group` | `RequestGroup` | — | Attach to a group for batch abort |
+| `id` | `string` | — | Unique request identifier |
+| `dependsOn` | `string[]` | — | Dependency chain IDs |
+| `shadow` | `ShadowOptions` | — | Shadow request to secondary API |
+| `offline` | `OfflineOptions` | — | Offline queue (browser) |
+| `stream` | `boolean` | — | Enable response streaming |
+| `sse` | `boolean` | — | Parse Server-Sent Events |
+| `parseJsonLines` | `boolean` | — | Parse NDJSON streams |
+| `fetch` | `RequestInit` | — | Raw fetch options |
+
+## Example: Full Configuration
+
+```ts
+const client = createClient({
+  // Core
+  baseURL: "https://api.example.com",
+  timeout: 10000,
+
+  // Resilience
+  retry: { retries: 3, factor: 2 },
+  circuitBreaker: { failureThreshold: 5, resetTimeout: 15000 },
+  dedupe: true,
+
+  // Security
+  security: {
+    enforceHTTPS: true,
+    allowedDomains: ["api.example.com"],
+  },
+
+  // Observability
+  timeline: { enabled: true },
+  profiling: { enabled: true },
+  correlation: { enabled: true },
+  logger: console,
+});
+```
+
+All options can be overridden per-request:
+
+```ts
+// Override timeout and retry for a specific request
+await client.get("/critical", {
+  timeout: 30000,
+  retry: { retries: 5 },
+  priority: 1,
+});
+```
+
+## What's Next
+
+- [Client Instance](/docs/core-api/client-instance) — creating and managing clients
+- [Request Options Reference](/docs/core-api/request-options-reference) — every option in detail

@@ -1,0 +1,65 @@
+---
+title: Design Goals
+description: The principles and design philosophy behind Solvix.
+---
+
+Solvix was designed from the ground up with specific goals that shaped its architecture.
+
+## 1. Zero-Cost Abstraction
+
+Features you don't use should cost nothing. A bare `createClient()` with no options should perform identically to native `fetch` — and it does.
+
+**How:** Every feature wraps a no-op when disabled. SHA-256 hashing for dedup keys is skipped entirely when `dedupe` and `cache` are both off. The priority queue defaults to `Infinity` concurrency, acting as a direct pass-through.
+
+## 2. TypeScript First, Not TypeScript Only
+
+The entire library is written in TypeScript with `strict: true`. But the public API is fully typed for consumers in both JS and TS — you get autocomplete either way.
+
+**How:** All option interfaces use generics. `client.get<T>()` infers response types. `validateResponse` integrates with Zod/Valibot schemas without requiring them.
+
+## 3. Resilience by Composition
+
+Individual resilience patterns (retry, circuit breaker, rate limiting) are well-understood. Solvix's innovation is making them compose correctly — retries respect rate limits, circuit breakers track retry failures, dedup is cache-aware.
+
+**How:** The pipeline architecture ensures stages execute in order. Downstream stages (like the circuit breaker) see the aggregated state from upstream stages (like retry attempts).
+
+## 4. Transparent Observability
+
+You should never wonder "what happened" to a request. Timeline, profiling, correlation IDs, and structured logging are built into the core — not added as afterthoughts.
+
+**How:** The `SolvixContext` object that flows through every stage accumulates metadata. The final response always carries `meta.timeline`, `meta.profile`, and `meta.correlationId` if enabled.
+
+## 5. Enterprise Security by Default
+
+The most common security issues in HTTP clients (CRLF injection, header smuggling, sensitive data in snapshots) are handled automatically. Additional layers are opt-in.
+
+**How:** Header sanitization runs on every request (strips `Host`, `Connection`, `Transfer-Encoding`). Snapshot mode automatically redacts sensitive headers.
+
+## 6. Transport Agnosticism
+
+The HTTP transport should be swappable without changing application code. Whether you're using `fetch`, `undici`, `http2`, or a mock transport for testing, the API stays the same.
+
+**How:** The `SolvixTransport` type is a simple `(url, init) => Promise<Response>` signature. Proxy and TLS features use `undici` under the hood but expose the same API.
+
+## 7. Minimum Dependencies
+
+Zero runtime dependencies (except optional `undici` for proxy/TLS). The entire library is self-contained, auditable, and easy to bundle.
+
+**How:** SHA-256 uses the Web Crypto API (built into all runtimes). Priority queue is hand-rolled (binary heap, not a library). No lodash, no `tslib`, no polyfills.
+
+## 8. Universal Runtime Support
+
+The same API works in Node.js, browsers, Deno, Bun, and edge runtimes. No platform-specific code paths in the public API.
+
+**How:** Uses `fetch` which is available in all modern runtimes. Proxy/TLS features are isolated to a `node/` module and only imported when configured.
+
+## Non-Goals
+
+- **Not a replacement for WebSocket/SSE clients** — Solvix handles HTTP requests. For persistent connections, use the appropriate client.
+- **Not a full OpenAPI client** — Solvix doesn't generate code from OpenAPI specs. It's a runtime HTTP client.
+- **Not a GraphQL client** — Solvix can send GraphQL requests but doesn't parse GraphQL schemas.
+
+## What's Next
+
+- [Architecture Overview](/docs/getting-started/architecture-overview) — how the pipeline works
+- [Why Solvix](/docs/getting-started/why-solvix) — comparison with other clients

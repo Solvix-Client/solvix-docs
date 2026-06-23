@@ -1,0 +1,131 @@
+---
+title: Client Instance
+description: Creating and managing Solvix client instances. Global options, per-request overrides, and multiple clients.
+---
+
+`createClient()` creates a reusable HTTP orchestrator. You typically create one client per API service.
+
+## Creating a Client
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const api = createClient({
+  baseURL: "https://api.example.com",
+  timeout: 5000,
+  retry: { retries: 3 },
+});
+```
+
+## Return Value
+
+`createClient()` returns an object with:
+
+```ts
+{
+  request<T>(url, options?): Promise<SolvixResponse<T>>,
+  get<T>(url, options?): Promise<SolvixResponse<T>>,
+  post<T>(url, body?, options?): Promise<SolvixResponse<T>>,
+  put<T>(url, body?, options?): Promise<SolvixResponse<T>>,
+  patch<T>(url, body?, options?): Promise<SolvixResponse<T>>,
+  delete<T>(url, options?): Promise<SolvixResponse<T>>,
+  head<T>(url, options?): Promise<SolvixResponse<T>>,
+  options<T>(url, options?): Promise<SolvixResponse<T>>,
+  use(fn: SolvixMiddleware): void,
+  metrics(): MetricsSnapshot | null,
+  healthCheck: { isHealthy(): boolean, stop(): void } | null,
+}
+```
+
+## Multiple Clients
+
+Create separate clients for separate services:
+
+```ts
+const github = createClient({
+  baseURL: "https://api.github.com",
+  retry: { retries: 3 },
+  rateLimit: { capacity: 60, refillRate: 1, interval: 60000 },
+});
+
+const payment = createClient({
+  baseURL: "https://payments.example.com",
+  timeout: 30000,
+  circuitBreaker: { failureThreshold: 5, resetTimeout: 30000 },
+});
+
+const internal = createClient({
+  baseURL: "https://internal.example.com",
+  timeout: 2000,
+  retry: { retries: 1 },
+});
+```
+
+Each client has its own:
+- Configuration
+- Circuit breaker state (per-host)
+- Rate limit bucket (per-host)
+- Middleware stack
+- Metrics collector
+- Priority queue
+
+## Per-Request Overrides
+
+Any global option can be overridden per-request:
+
+```ts
+const api = createClient({
+  baseURL: "https://api.example.com",
+  timeout: 5000,
+  retry: { retries: 2 },
+});
+
+// Override for this specific request
+await api.get("/slow-endpoint", {
+  timeout: 30000,
+  retry: { retries: 5 },
+  priority: 1,
+});
+```
+
+## Type Parameters
+
+All methods accept a type parameter for the response data:
+
+```ts
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+const user = await api.get<User>("/users/1");
+// user.data is typed as User
+```
+
+## Without Type Inference
+
+For dynamic responses, just omit the type parameter — `data` will be `unknown`:
+
+```ts
+const res = await api.get("/whatever");
+// res.data is unknown — use type narrowing
+```
+
+## Client Raw Request
+
+`client.request()` gives full control:
+
+```ts
+await api.request("/custom", {
+  method: "REPORT",
+  body: { reportType: "summary" },
+  bodyType: "json",
+});
+```
+
+## What's Next
+
+- [Request Options Reference](/docs/core-api/request-options-reference) — every option explained
+- [Middleware System](/docs/core-api/middleware-system) — extending the client
+- [Metrics](/docs/core-api/metrics) — measuring client performance

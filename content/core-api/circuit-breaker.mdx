@@ -1,0 +1,202 @@
+---
+title: Circuit Breaker
+description: Protect your application from cascading failures with per-host circuit breaker. Stops requests when services are unhealthy, tests recovery with half-open probes.
+---
+
+The Circuit Breaker protects downstream services from being overwhelmed by failing requests. When a host exceeds its failure threshold, the circuit **opens** and all subsequent requests fail immediately instead of retrying into a dead service.
+
+> **Retry handles transient failures. Circuit breaker handles persistent failures.**
+
+## Basic Usage
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  circuitBreaker: {
+    failureThreshold: 5,
+    failureRate: 0.5,
+    rollingWindow: 10000,
+    resetTimeout: 15000,
+    halfOpenRequests: 2,
+  },
+});
+```
+
+## Configuration
+
+```ts
+interface CircuitBreakerOptions {
+  /** Minimum failures before circuit can open. Default: 5 */
+  failureThreshold?: number;
+
+  /** Minimum failure rate (0.0–1.0) in the rolling window to open. Default: 0.5 */
+  failureRate?: number;
+
+  /** Rolling window in ms for counting failures. Default: 10000 (10s) */
+  rollingWindow?: number;
+
+  /** Minimum requests in window before circuit evaluates. Default: 10 */
+  minimumRequests?: number;
+
+  /** Time in ms before trying half-open state. Default: 15000 (15s) */
+  resetTimeout?: number;
+
+  /** Number of probe requests in half-open state. Default: 3 */
+  halfOpenRequests?: number;
+}
+```
+
+## Circuit States
+
+```
+                 ┌─────────────────┐
+          ┌─────→│     CLOSED      │←────── Normal operation
+          │      │ Requests flow   │       All requests succeed
+          │      └────────┬────────┘
+          │               │ Failures exceed threshold
+          │               ↓
+          │      ┌─────────────────┐
+          │      │      OPEN       │←────── Emergency
+          │      │ Requests fail   │       Requests rejected immediately
+          │      │ Wait resetTimeout│
+          │      └────────┬────────┘
+          │               │ Timeout expires
+          │               ↓
+          │      ┌─────────────────┐
+          │      │    HALF-OPEN    │←────── Probing
+          │      │ Limited probes  │       Testing if service recovered
+          │      └────────┬────────┘
+          │               │
+          ├─── Probes succeed ───→ CLOSED (recovered)
+          └─── Probe fails ──────→ OPEN (still broken)
+```
+
+## Per-Host Isolation
+
+Circuit breakers are **per-host**. If `api-primary.example.com` fails, requests to `api-backup.example.com` continue unaffected:
+
+```ts
+const client = createClient({
+  circuitBreaker: {
+    failureThreshold: 5,
+    resetTimeout: 30000,
+  },
+});
+
+// Primary fails → circuit opens for api.example.com
+await client.get("https://api.example.com/data").catch(() => {});
+
+// Backup still works on a different host
+await client.get("https://backup.example.com/data"); // still works!
+```
+
+## Real-World Use Case: Microservice Dependencies
+
+```ts
+const client = createClient({
+  circuitBreaker: {
+    failureThreshold: 10,
+    failureRate: 0.3,
+    rollingWindow: 30000,  // 30s window
+    minimumRequests: 20,   // need 20 requests before evaluating
+    resetTimeout: 30000,   // try again after 30s
+    halfOpenRequests: 5,   // send 5 probes to test recovery
+  },
+});
+
+// If payment service fails 10 out of 20 times in 30s,
+// circuit opens — payment requests fail fast instead of timing out
+```
+
+## Circuit Breaker + Retry
+
+Retries and circuit breaker work together:
+- Retries handle **transient** failures (single blips)
+- Circuit breaker handles **sustained** failures (service is down)
+
+```ts
+const client = createClient({
+  retry: { retries: 3 },
+  circuitBreaker: {
+    failureThreshold: 5,
+    resetTimeout: 15000,
+  },
+});
+
+// Retries exhaust their attempts → each attempt counts as a failure
+// Circuit breaker sees 3 retries × failing → opens the circuit
+// Subsequent requests fail fast instead of retrying into a dead service
+```
+
+## Error Handling
+
+When the circuit is open, requests throw immediately:
+
+```ts
+try {
+  await client.get("/failing-service");
+} catch (error) {
+  console.error(error.message);
+  // "Circuit breaker is open for api.example.com"
+}
+```
+
+## Monitoring Circuit State
+
+Use `SolvixBus` to react to circuit state changes:
+
+```ts
+import { SolvixBus } from "@adityadev13/solvix";
+
+SolvixBus.on("request:error", (event) => {
+  if (event.context.error?.message?.includes("Circuit breaker")) {
+    console.error(`⚠️ Circuit open for ${event.context.url}`);
+    // Alert PagerDuty, increment Prometheus counter, etc.
+  }
+});
+```
+
+Or use the `onCircuitOpen` hook:
+
+```ts
+const client = createClient({
+  circuitBreaker: { failureThreshold: 3, resetTimeout: 10000 },
+  hooks: {
+    onCircuitOpen: (host: string) => {
+      console.warn(`🔴 Circuit opened for ${host}`);
+    },
+  },
+});
+```
+
+## Health Check Integration
+
+Combine circuit breaker with health checks for proactive recovery detection:
+
+```ts
+const client = createClient({
+  circuitBreaker: { failureThreshold: 5, resetTimeout: 30000 },
+  healthCheck: {
+    enabled: true,
+    endpoint: "/health",
+    intervalMs: 10000,
+  },
+});
+```
+
+When the health check succeeds, the circuit breaker can recover faster than waiting for `resetTimeout`.
+
+## Best Practices
+
+1. **Set reasonable thresholds** — 5–10 failures with 10–30s windows for most services
+2. **Use `retry` alongside circuit breaker** — retry for blips, circuit breaker for outages
+3. **Per-host isolation** — one bad service shouldn't affect others
+4. **Half-open probes** — always test before fully closing; services may need gradual warm-up
+5. **Monitor circuit state** — alerts on circuit open are a sign of production issues
+
+## What's Next
+
+- [Retry Engine](/docs/core-api/retry-engine) — automatic failure recovery
+- [Rate Limiting](/docs/core-api/rate-limiting) — client-side throttling
+- [Health Checks](/docs/core-api/health-check) — proactive service monitoring

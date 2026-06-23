@@ -1,0 +1,23 @@
+---
+title: Using Solvix with Serverless
+description: Configure Solvix for serverless environments — cold starts, timeouts, and edge runtimes.
+---
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+// Serverless-optimized client
+const api = createClient({
+  baseURL: process.env.API_URL,
+  timeout: 8000,             // Lambda timeout is usually 10s
+  retry: { retries: 1 },     // Limited retry — function will timeout
+  logger: console,
+});
+```
+
+For edge functions (Cloudflare Workers, Vercel Edge), keep it minimal:
+- No `proxy` or `tls` (requires undici)
+- No `offline` queue (browser-only)
+- No `cookieJar` (edge lacks full cookie APIs)
+
+Everything else works out of the box.

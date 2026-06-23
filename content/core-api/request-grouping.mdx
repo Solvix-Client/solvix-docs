@@ -1,0 +1,135 @@
+---
+title: Request Grouping
+description: Group related requests together and abort them all at once. Track group-level statistics.
+---
+
+`RequestGroup` lets you batch multiple requests into a logical group, then abort them all at once or retrieve aggregate stats.
+
+> **Stop manually tracking AbortControllers. Use RequestGroup for batch cancellation.**
+
+## Basic Usage
+
+```ts
+import { RequestGroup, createClient } from "@adityadev13/solvix";
+
+const client = createClient({ baseURL: "https://api.example.com" });
+
+// Create a group
+const searchGroup = RequestGroup.create("search-page");
+
+// Attach requests to the group
+client.get("/search?q=foo", { group: searchGroup });
+client.get("/search?q=bar", { group: searchGroup });
+client.get("/filters", { group: searchGroup });
+
+// User navigates away — abort all in-flight
+searchGroup.abort();
+```
+
+## Creating Groups
+
+```ts
+// Method 1: static factory
+const group = RequestGroup.create("my-group");
+
+// Method 2: constructor
+const group = new RequestGroup("my-group");
+```
+
+## Tracking Stats
+
+```ts
+const group = RequestGroup.create("data-load");
+
+// Fire multiple requests
+Promise.all([
+  client.get("/users", { group }),
+  client.get("/posts", { group }),
+  client.get("/comments", { group }),
+]).then(() => {
+  const stats = group.getStats();
+
+  console.log(stats);
+  // {
+  //   totalRequests: 3,
+  //   completed: 3,
+  //   failed: 0,
+  //   startTime: 1700000000123,
+  //   endTime: 1700000000450,
+  //   duration: 327,
+  // }
+});
+```
+
+## Real-World Use Case: Page Navigation
+
+```ts
+import { RequestGroup, createClient } from "@adityadev13/solvix";
+
+const client = createClient({ baseURL: "https://api.example.com" });
+let currentGroup: RequestGroup | null = null;
+
+async function loadPage(pageId: string) {
+  // Cancel previous page's requests
+  currentGroup?.abort();
+
+  // Create new group for this page
+  currentGroup = RequestGroup.create(`page-${pageId}`);
+
+  // Load all page data
+  const [user, posts, notifications] = await Promise.all([
+    client.get("/me", { group: currentGroup }),
+    client.get(`/posts?page=${pageId}`, { group: currentGroup }),
+    client.get("/notifications", { group: currentGroup }),
+  ]);
+
+  return { user: user.data, posts: posts.data, notifications: notifications.data };
+}
+```
+
+## RequestGroup + AbortController
+
+Each request in a group gets its own `AbortController`. When `group.abort()` is called, all controllers are aborted simultaneously:
+
+```ts
+const group = RequestGroup.create("batch");
+
+client.get("/slow-1", { group });
+client.get("/slow-2", { group });
+client.get("/fast", { group });
+
+// Abort all three
+group.abort();
+// → slow-1, slow-2, and fast all abort immediately
+```
+
+## Stats Monitoring
+
+Use `SolvixBus` to monitor group-level completion:
+
+```ts
+import { SolvixBus } from "@adityadev13/solvix";
+
+SolvixBus.on("request:complete", (event) => {
+  const group = event.context.options.group;
+  if (group) {
+    const stats = group.getStats();
+    if (stats.completed + stats.failed === stats.totalRequests) {
+      console.log(`Group "${group.id}" finished in ${stats.duration}ms`);
+    }
+  }
+});
+```
+
+## Best Practices
+
+1. **Create one group per page/screen** — allows clean cancellation on navigation
+2. **Always abort old groups** — prevents stale data from populating new views
+3. **Monitor stats** — track group duration to measure page load performance
+4. **Groups are lightweight** — create and discard them freely
+
+## What's Next
+
+- [Dependency Chains](/docs/core-api/request-dependencies) — ordered request execution
+- [Priority Queue](/docs/core-api/request-priority-queue) — concurrency control
+- [Middleware System](/docs/core-api/middleware-system) — custom request processing

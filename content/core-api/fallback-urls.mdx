@@ -1,0 +1,37 @@
+---
+title: Fallback URLs
+description: Automatically retry failed requests against backup URLs. Primary → fallback1 → fallback2.
+---
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  baseURL: "https://primary.example.com",
+  fallbackURLs: [
+    "https://backup1.example.com",
+    "https://backup2.example.com",
+  ],
+  retry: { retries: 2 }, // Retries per URL
+});
+
+// If primary fails → retries → falls back to backup1 → retries → backup2
+await client.get("/data");
+```
+
+## How It Works
+
+Each URL in the fallback list is tried in order. The `retry` configuration applies to each URL. If all URLs are exhausted, the error from the last attempt is thrown.
+
+## Use Case: Multi-Region Failover
+
+```ts
+const client = createClient({
+  baseURL: "https://us-east.api.example.com",
+  retry: { retries: 1 },
+  fallbackURLs: [
+    "https://eu-west.api.example.com",
+    "https://ap-southeast.api.example.com",
+  ],
+});
+```

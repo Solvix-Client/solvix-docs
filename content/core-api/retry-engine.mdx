@@ -1,0 +1,201 @@
+---
+title: Retry Engine
+description: Configure automatic retries with exponential backoff, jitter, and adaptive timing. Stampede-safe, abort-aware.
+---
+
+The Retry Engine automatically retries failed requests using configurable strategies. It integrates with the circuit breaker, rate limiter, and deduplication system — retries never overwhelm failing services.
+
+> **Don't build retry wrappers. Solvix retries are built-in, composable, and production-tested under 50 concurrent failures.**
+
+## Basic Usage
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  retry: { retries: 3 },
+});
+```
+
+Three retries means up to **4 total attempts** (1 original + 3 retries).
+
+## Configuration
+
+```ts
+interface RetryOptions {
+  /** Maximum number of retry attempts. Default: 0 (no retries) */
+  retries: number;
+
+  /** Base delay in ms. Actual delay = min(baseDelay * factor^attempt, maxTimeout). Default: 300 */
+  baseDelay?: number;
+
+  /** Exponential factor. Default: 2 (300, 600, 1200, 2400...) */
+  factor?: number;
+
+  /** Maximum delay cap in ms. Default: 10000 (10s) */
+  maxTimeout?: number;
+
+  /** Add random jitter (±25%) to prevent thundering herd. Default: true */
+  jitter?: boolean;
+
+  /** Custom retry condition. Default: retry on 5xx, timeout, network errors */
+  shouldRetry?: (error: unknown, ctx: SolvixContext) => boolean | Promise<boolean>;
+
+  /** Adaptive retry — uses actual network timing for maxTimeout. Default: true */
+  adaptive?: boolean;
+}
+```
+
+## Complete Example
+
+```ts
+const client = createClient({
+  retry: {
+    retries: 5,
+    baseDelay: 200,
+    factor: 2,
+    maxTimeout: 10000,
+    jitter: true,
+    adaptive: true,
+    shouldRetry: (error) => {
+      // Only retry on server errors and timeouts
+      if (error instanceof Error && error.message.includes("timeout")) return true;
+      if (error?.status >= 500) return true;
+      return false; // Don't retry 4xx errors
+    },
+  },
+});
+```
+
+## How it Works
+
+```
+Request fails ──→ shouldRetry? ──→ No ──→ Throw error
+                       │
+                      Yes
+                       ↓
+         Wait: delay = min(baseDelay * factor^attempt, maxTimeout)
+         Apply jitter: delay ± 25%
+                       ↓
+         Adapt: maxTimeout = max(maxTimeout, actualNetworkTime * 2)
+                       ↓
+         Retry request (circuit breaker check → queue → transport)
+                       ↓
+         Success? ──→ Return response
+         Fail? ──→ Loop back
+```
+
+## Exponential Backoff Examples
+
+```ts
+// Default: 300, 600, 1200, 2400, 4800, 10000(capped)
+retry: { retries: 5 }
+
+// Aggressive: 100, 200, 400, 800
+retry: { retries: 3, baseDelay: 100, factor: 2 }
+
+// Conservative: 1000, 2000, 4000, 8000
+retry: { retries: 3, baseDelay: 1000, factor: 2 }
+
+// Slow ramp: 500, 1000, 1500, 2000
+retry: { retries: 3, baseDelay: 500, factor: 1.5 }
+
+// Custom jitter off (not recommended for high concurrency)
+retry: { retries: 3, jitter: false }
+```
+
+## Real-World Use Cases
+
+### API Rate Limit Recovery
+
+Many APIs return `429 Too Many Requests` with a `Retry-After` header. Use `shouldRetry` to handle it:
+
+```ts
+const client = createClient({
+  retry: {
+    retries: 3,
+    shouldRetry: (error) => {
+      if (error?.status === 429) return true; // rate limited
+      if (error?.status >= 500) return true;  // server error
+      return false;
+    },
+  },
+});
+```
+
+### Idempotent Retry Only
+
+Only retry safe HTTP methods:
+
+```ts
+const client = createClient({
+  retry: { retries: 3 },
+});
+
+// GET requests are automatically retried (idempotent)
+await client.get("/data");
+
+// POST requests are retried at the transport level
+// but you can guard in shouldRetry
+```
+
+## Retry + Circuit Breaker Integration
+
+Retries count toward circuit breaker failure thresholds. If the circuit opens, retries stop immediately:
+
+```ts
+const client = createClient({
+  retry: { retries: 3 },
+  circuitBreaker: {
+    failureThreshold: 5,  // After 5 failures (including retries), circuit opens
+    resetTimeout: 15000, // Try again after 15s
+  },
+});
+```
+
+## Retry + Deduplication
+
+Deduped requests share the same retry lifecycle. If one request triggers retries, all waiting consumers get the final result:
+
+```ts
+const client = createClient({
+  retry: { retries: 3 },
+  dedupe: true,
+});
+
+// 100 concurrent identical calls → 1 network call with 3 retries
+const results = await Promise.all(
+  Array.from({ length: 100 }, () => client.get("/data"))
+);
+```
+
+## Testing Retry Behavior
+
+When `timeline` and `profiling` are enabled, the response metadata shows retry count:
+
+```ts
+const client = createClient({
+  retry: { retries: 3 },
+  timeline: { enabled: true },
+});
+
+const res = await client.get("/flaky-endpoint");
+console.log(res.meta.retryCount);  // 2 (succeeded on 3rd attempt)
+console.log(res.meta.timeline);    // See retry stages
+console.log(res.meta.profile);     // Total time including retries
+```
+
+## Best Practices
+
+1. **3 retries max** — more than 5 is rarely useful and can cause backpressure
+2. **Enable jitter** — prevents the thundering herd problem when many clients retry simultaneously
+3. **Integrate with circuit breaker** — prevents retries from overwhelming a genuinely dead service
+4. **Use `shouldRetry`** — don't retry on 4xx errors (client mistakes won't fix themselves)
+5. **Monitor retry counts** — `SolvixBus.on("request:retry", ...)` to alert on excessive retries
+6. **Adaptive timing** — automatically adjusts maxTimeout based on actual network performance
+
+## What's Next
+
+- [Circuit Breaker](/docs/core-api/circuit-breaker) — prevent cascading failures
+- [Rate Limiting](/docs/core-api/rate-limiting) — client-side request throttling
+- [Custom Retry Logic](/docs/core-api/custom-retry-logic) — advanced retry strategies

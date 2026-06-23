@@ -1,0 +1,18 @@
+---
+title: Domain Allowlist
+description: Restrict which domains the client can make requests to. Prevent SSRF and data exfiltration.
+---
+
+```ts
+const client = createClient({
+  baseURL: "https://api.example.com",
+  security: {
+    allowedDomains: ["api.example.com", "backup.example.com"],
+  },
+});
+
+await client.get("https://evil-site.com/data");
+// Throws: "Domain not allowed"
+```
+
+Useful for libraries and SDKs to restrict requests to known endpoints only.

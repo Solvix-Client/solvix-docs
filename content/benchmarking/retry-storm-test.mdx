@@ -1,0 +1,29 @@
+---
+title: Retry Storm Test
+description: Validates retry engine stability under 50 concurrent requests, each failing twice before succeeding.
+---
+
+## Scenario
+
+- 50 concurrent requests
+- Each fails twice, succeeds on third attempt
+- Configuration: `retry: 2`
+
+## Results
+
+| Metric | Value |
+|--------|-------|
+| Mean latency | ~607 ms |
+| RME | 0.29% |
+| Std dev | ~7 ms |
+
+## Analysis
+
+- No exponential explosion — each request retries exactly twice
+- No recursive loops — backoff is bounded
+- No retry drift accumulation — retries stay synchronized
+- Memory remains stable
+
+## Conclusion
+
+Solvix retry engine is stable and production-safe under failure pressure.

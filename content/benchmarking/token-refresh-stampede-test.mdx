@@ -1,0 +1,30 @@
+---
+title: Token Refresh Stampede Test
+description: Validates stampede-safe token refresh — 100 concurrent 401s trigger only 1 refresh call.
+---
+
+## Scenario
+
+- 100 concurrent requests
+- All return 401 (expired token)
+- Simulated refresh delay
+
+## Results
+
+```
+Transport executed: 1
+Refresh calls: 1
+```
+
+100 concurrent requests → **1 refresh call**, 100 retried with the new token.
+
+## How It Works
+
+1. First request hits 401 → starts refresh
+2. Remaining 99 requests detect pending refresh → wait
+3. Refresh completes → all 100 retry with new token
+4. No duplicate refresh calls
+
+## Conclusion
+
+Token refresh orchestration is enterprise-grade — prevents auth server overload under concurrent 401s.

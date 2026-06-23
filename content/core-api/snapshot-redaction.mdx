@@ -1,0 +1,26 @@
+---
+title: Snapshot Redaction
+description: Automatically redact sensitive data from debug snapshots. Passwords, tokens, and secrets are masked.
+---
+
+When `snapshot` is enabled, sensitive headers are **automatically redacted** in the snapshot output:
+
+```ts
+const client = createClient({
+  snapshot: { enabled: true },
+  security: {
+    redactSnapshot: true, // Default: true when snapshot is enabled
+  },
+});
+```
+
+## Redacted Fields
+
+| Pattern | Example | Stored As |
+|---------|---------|-----------|
+| `authorization` | `Bearer eyJhbGci...` | `[REDACTED]` |
+| `cookie` | `session=abc123` | `[REDACTED]` |
+| `x-api-key` | `sk-123456` | `[REDACTED]` |
+| `token` | Any header containing "token" | `[REDACTED]` |
+
+Passwords and secrets in URL query params are also redacted (`password=***`, `secret=***`, `token=***`).

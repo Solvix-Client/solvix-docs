@@ -1,0 +1,55 @@
+---
+title: Custom Backoff Strategy
+description: Override the default exponential backoff with custom delay calculations.
+---
+
+The default backoff is `min(baseDelay * factor^attempt, maxTimeout)` with optional jitter. You can override it with a custom function.
+
+```ts
+const client = createClient({
+  retry: {
+    retries: 3,
+    baseDelay: 1000,
+    // Custom backoff: linear instead of exponential
+    shouldRetry: async (error, ctx) => {
+      if (error?.status >= 500) {
+        // Custom delay: wait 1s × attempt number
+        await new Promise(r => setTimeout(r, ctx.meta.attemptNumber * 1000));
+        return true;
+      }
+      return false;
+    },
+  },
+});
+```
+
+## Default Backoff Formula
+
+```
+delay = min(baseDelay × factor^(attempt-1), maxTimeout)
+jitter = delay × (0.75 + Math.random() × 0.5)  // ±25%
+```
+
+## Example: Fibonacci Backoff
+
+```ts
+function fibonacci(n: number): number {
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+const client = createClient({
+  retry: {
+    retries: 5,
+    shouldRetry: async (error, ctx) => {
+      if (error?.status >= 500) {
+        const delay = fibonacci(ctx.meta.attemptNumber + 1) * 200;
+        await new Promise(r => setTimeout(r, delay));
+        return true;
+      }
+      return false;
+    },
+  },
+});
+// Delays: 200ms, 200ms, 400ms, 600ms, 1000ms
+```

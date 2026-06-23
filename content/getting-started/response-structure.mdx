@@ -1,0 +1,128 @@
+---
+title: Response Object Structure
+description: The full shape of Solvix response objects — data, status, headers, and metadata.
+---
+
+Every Solvix request returns a `SolvixResponse<T>` object with four fields:
+
+```ts
+interface SolvixResponse<T> {
+  /** Parsed response body (JSON object, text string, Blob, etc.) */
+  data: T;
+  /** HTTP status code */
+  status: number;
+  /** Response headers */
+  headers: Headers;
+  /** Request metadata including timeline, profiling, correlation ID */
+  meta: SolvixContext<T>["meta"];
+}
+```
+
+## Example
+
+```ts
+const res = await client.get("/users/1");
+
+res.data;    // { id: 1, name: "Alice", ... }
+res.status;  // 200
+res.headers; // Headers { "content-type": "application/json", ... }
+res.meta;    // { correlationId: "abc123", timeline: [...], ... }
+```
+
+## The `data` Field
+
+`data` contains the parsed response body. The parsing depends on `responseType`:
+
+| responseType | data type | Description |
+|--------------|-----------|-------------|
+| `"json"` (default) | `T` (parsed JSON) | Automatically parses JSON response body |
+| `"text"` | `string` | Returns response as plain text |
+| `"blob"` | `Blob` | Returns raw binary blob |
+| `"arrayBuffer"` | `ArrayBuffer` | Returns raw binary buffer |
+| `"formData"` | `FormData` | Parses multipart form response |
+| `"stream"` | `ReadableStream` | Returns raw readable stream |
+| `"raw"` | `Response` | Returns the raw Response object untouched |
+
+```ts
+// Get text response
+const text = await client.get("/readme.txt", { responseType: "text" });
+console.log(text.data); // string
+
+// Stream a large file
+const stream = await client.get("/big-file.mp4", { responseType: "stream" });
+const reader = stream.data.getReader();
+```
+
+## The `meta` Field
+
+`meta` contains rich metadata about the request lifecycle:
+
+```ts
+{
+  correlationId: "req_abc123",           // Auto-assigned ID (if correlation enabled)
+  timeline: [                            // 15-stage timestamp array (if timeline enabled)
+    { stage: "created", timestamp: 1700000000123 },
+    { stage: "queueStart", timestamp: 1700000000124 },
+    { stage: "transportStart", timestamp: 1700000000150 },
+    { stage: "responseReceived", timestamp: 1700000000450 },
+    { stage: "completed", timestamp: 1700000000455 },
+  ],
+  profile: {                             // Profiling summary (if profiling enabled)
+    totalMs: 332,
+    queueWaitMs: 1,
+    networkMs: 300,
+    parseMs: 0.5,
+    retryCount: 0,
+  },
+  retryCount: 0,                         // Number of retries that occurred
+  attemptNumber: 1,                      // Current attempt number
+  startTime: 1700000000123,
+  duration: 332,                         // Total duration in ms
+  timelineEnabled: true,
+  profilingEnabled: true,
+  snapshot?: { ... },                    // Request snapshot (if snapshot enabled)
+}
+```
+
+## Response Validation
+
+If you configure `validateResponse`, the response data is validated before being returned:
+
+```ts
+import { z } from "zod";
+
+const UserSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  email: z.string().email(),
+});
+
+const client = createClient({
+  baseURL: "https://api.example.com",
+  validateResponse: (data) => UserSchema.parse(data),
+});
+
+const res = await client.get<User>("/users/1");
+// res.data is now validated by Zod — throws if schema doesn't match
+```
+
+## Raw Response Access
+
+You can intercept the raw `Response` object using a `transformResponse` hook:
+
+```ts
+const client = createClient({
+  transformResponse: async (response: Response) => {
+    if (response.headers.get("content-type")?.includes("json")) {
+      return response.json();
+    }
+    return response.text();
+  },
+});
+```
+
+## What's Next
+
+- [Error Handling](/docs/getting-started/error-handling-basics) — understand error types
+- [Request Options Reference](/docs/core-api/request-options-reference) — full option documentation
+- [Transform Request/Response](/docs/core-api/transform-request) — customize request/response processing

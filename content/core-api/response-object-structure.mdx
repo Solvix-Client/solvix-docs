@@ -1,0 +1,145 @@
+---
+title: Response Object Structure
+description: The complete Solvix response object — data, status, headers, metadata, timeline, and profiling.
+---
+
+Every Solvix request method returns a `SolvixResponse<T>` object.
+
+## Response Shape
+
+```ts
+interface SolvixResponse<T> {
+  /** Parsed response body (type depends on responseType) */
+  data: T;
+
+  /** HTTP status code */
+  status: number;
+
+  /** Response headers */
+  headers: Headers;
+
+  /** Request metadata (timeline, profiling, correlation, etc.) */
+  meta: SolvixMeta;
+}
+```
+
+## Response Type by `responseType`
+
+| `responseType` | `data` type | Use Case |
+|---|---|---|
+| `"json"` (default) | `T` | JSON APIs |
+| `"text"` | `string` | HTML, CSV, plain text |
+| `"blob"` | `Blob` | File downloads, images |
+| `"arrayBuffer"` | `ArrayBuffer` | Binary processing |
+| `"formData"` | `FormData` | Form response parsing |
+| `"stream"` | `ReadableStream<Uint8Array>` | Large file streaming |
+| `"raw"` | `Response` | Full Response object access |
+
+## Metadata (`meta`)
+
+The `meta` field contains rich lifecycle data:
+
+```ts
+interface SolvixMeta {
+  /** Auto-assigned correlation ID (if correlation enabled) */
+  correlationId?: string;
+
+  /** Distributed trace ID (if tracing enabled) */
+  traceId?: string;
+
+  /** 15-stage request timeline (if timeline enabled) */
+  timeline?: TimelineEntry[];
+
+  /** Performance summary (if profiling enabled) */
+  profile?: ProfileMetrics;
+
+  /** Number of retries that occurred */
+  retryCount: number;
+
+  /** Current attempt number */
+  attemptNumber: number;
+
+  /** Start timestamp */
+  startTime: number;
+
+  /** Total duration in ms */
+  duration: number;
+
+  /** Request snapshot (if snapshot enabled) */
+  snapshot?: RequestSnapshot;
+}
+```
+
+### Timeline Stages
+
+When `timeline: { enabled: true }`:
+
+```ts
+[
+  { stage: "created",         timestamp: 1700000000123 },
+  { stage: "queued",          timestamp: 1700000000124 },
+  { stage: "dequeued",        timestamp: 1700000000125 },
+  { stage: "breakerCheck",    timestamp: 1700000000125 },
+  { stage: "rateLimitWait",   timestamp: 1700000000126 },
+  { stage: "transportStart",  timestamp: 1700000000150 },
+  { stage: "responseReceived",timestamp: 1700000000450 },
+  { stage: "parseStart",      timestamp: 1700000000451 },
+  { stage: "parseEnd",        timestamp: 1700000000452 },
+  { stage: "deserialization", timestamp: 1700000000452 },
+  { stage: "validateStart",   timestamp: 1700000000453 },
+  { stage: "validateEnd",     timestamp: 1700000000454 },
+  { stage: "cacheWrite",      timestamp: 1700000000454 },
+  { stage: "snapshot",        timestamp: 1700000000455 },
+  { stage: "completed",       timestamp: 1700000000455 },
+]
+```
+
+### Profile Metrics
+
+When `profiling: { enabled: true }`:
+
+```ts
+{
+  totalMs: 332,          // Total wall-clock time
+  queueWaitMs: 1,        // Time spent in queue
+  rateLimitWaitMs: 0,    // Time waiting for rate limit token
+  networkMs: 300,        // Time from transportStart to responseReceived
+  parseMs: 0.5,          // Time spent parsing the response
+  retryCount: 0,         // Number of retries
+  validationMs: 0.1,     // Time spent in validateResponse
+}
+```
+
+## Complete Example
+
+```ts
+const client = createClient({
+  correlation: { enabled: true },
+  timeline: { enabled: true },
+  profiling: { enabled: true },
+});
+
+const res = await client.get("/users/1");
+
+// Access data
+console.log(res.data);     // { id: 1, name: "Alice", ... }
+console.log(res.status);   // 200
+console.log(res.headers.get("content-type")); // "application/json"
+
+// Access metadata
+console.log(res.meta.correlationId); // "req_abc123"
+console.log(res.meta.duration);      // 332
+console.log(res.meta.retryCount);    // 0
+console.log(res.meta.timeline);      // [{ stage: "created", ... }, ...]
+console.log(res.meta.profile);       // { totalMs: 332, networkMs: 300, ... }
+
+// With profiling, you can see where time was spent
+const { profile } = res.meta;
+console.log(`Network: ${profile?.networkMs}ms (${((profile?.networkMs ?? 0) / (profile?.totalMs ?? 1) * 100).toFixed(0)}% of total)`);
+```
+
+## What's Next
+
+- [Timeline Tracking](/docs/core-api/timeline-tracking) — understanding request timing
+- [Profiling Mode](/docs/core-api/profiling-mode) — performance analysis
+- [Transform Response](/docs/core-api/transform-response) — custom response parsing

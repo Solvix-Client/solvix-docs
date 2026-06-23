@@ -1,0 +1,164 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --accent: #0FA38A;
+  --accent-light: #1FD1B2;
+  --accent-dark: #0D8A75;
+  --navbar-height: 64px;
+
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+}
+
+.dark {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+  --border-color: #334155;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+/* ── Sidebar ── */
+
+.sidebar-link {
+  @apply block px-3 py-1.5 text-sm rounded-lg transition-colors;
+  color: var(--text-muted);
+}
+.sidebar-link:hover { background: var(--bg-secondary); color: var(--text-primary); }
+.sidebar-link.active { background: rgba(15,163,138,0.1); color: var(--accent); font-weight: 500; }
+
+/* ── TOC ── */
+
+.toc-link {
+  @apply block text-sm py-1 transition-colors;
+  color: var(--text-muted);
+  border-left: 2px solid transparent;
+  padding-left: 12px;
+}
+.toc-link:hover { color: var(--text-primary); }
+.toc-link.active { color: var(--accent); border-left-color: var(--accent); }
+
+/* ── Animations ── */
+
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+
+/* ── Admonitions ── */
+
+.admonition { @apply rounded-xl border p-4 my-6; }
+.admonition-note { @apply border-blue-200 bg-blue-50 text-blue-800; }
+.dark .admonition-note { @apply border-blue-800 bg-blue-950 text-blue-200; }
+.admonition-warning { @apply border-amber-200 bg-amber-50 text-amber-800; }
+.dark .admonition-warning { @apply border-amber-800 bg-amber-950 text-amber-200; }
+.admonition-danger { @apply border-red-200 bg-red-50 text-red-800; }
+.dark .admonition-danger { @apply border-red-800 bg-red-950 text-red-200; }
+.admonition-tip { @apply border-emerald-200 bg-emerald-50 text-emerald-800; }
+.dark .admonition-tip { @apply border-emerald-800 bg-emerald-950 text-emerald-200; }
+
+/* ── Code Blocks ── */
+
+pre { @apply rounded-xl overflow-x-auto text-sm leading-relaxed; }
+pre code { @apply block; }
+pre code .line { @apply px-4; }
+
+/* ── Prose / Markdown Content ── */
+
+.prose {
+  max-width: none;
+  /* Override Tailwind prose variables to use our custom CSS variables */
+  --tw-prose-body: var(--text-secondary);
+  --tw-prose-headings: var(--text-primary);
+  --tw-prose-links: var(--accent);
+  --tw-prose-bold: var(--text-primary);
+  --tw-prose-counters: var(--text-muted);
+  --tw-prose-bullets: var(--accent);
+  --tw-prose-hr: var(--border-color);
+  --tw-prose-quotes: var(--text-primary);
+  --tw-prose-quote-borders: var(--accent);
+  --tw-prose-captions: var(--text-muted);
+  --tw-prose-code: var(--accent);
+  --tw-prose-pre-code: #e6edf3;
+  --tw-prose-pre-bg: #0d1117;
+  --tw-prose-th-borders: var(--border-color);
+  --tw-prose-td-borders: var(--border-color);
+}
+
+.prose h2 {
+  @apply text-xl font-semibold mt-10 mb-4 pb-2;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.prose h3 {
+  @apply text-lg font-semibold mt-8 mb-3;
+  color: var(--text-primary);
+}
+
+.prose p { @apply leading-relaxed mb-4; }
+.prose a { @apply no-underline hover:underline; }
+.prose strong { @apply font-semibold; }
+.prose ul, .prose ol { @apply pl-6 mb-4 space-y-1; }
+.prose li { @apply leading-relaxed; }
+.prose li::marker { color: var(--accent); }
+.prose hr { @apply my-8; border-color: var(--border-color); }
+.prose blockquote { @apply italic border-l-4 pl-4 my-4; border-color: var(--accent); }
+
+/* ── Tables ── */
+
+.prose table { @apply w-full border-collapse my-6; display: block; overflow-x: auto; white-space: nowrap; }
+.prose table thead { @apply border-b-2; border-color: var(--border-color); }
+.prose table th { @apply text-left font-semibold px-4 py-3; color: var(--text-primary); background: var(--bg-secondary); border-bottom: 2px solid var(--border-color); }
+.prose table td { @apply px-4 py-3; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); }
+.prose table tbody tr { @apply transition-colors; }
+.prose table tbody tr:hover { background: rgba(15,163,138,0.04); }
+.prose table tbody tr:nth-child(even) { background: var(--bg-secondary); }
+.prose table tbody tr:nth-child(even):hover { background: rgba(15,163,138,0.06); }
+.prose table thead { position: sticky; top: 0; z-index: 1; }
+
+/* ── Inline code ── */
+
+.prose code {
+  @apply text-sm font-mono px-1.5 py-0.5 rounded;
+  background: var(--bg-tertiary);
+  color: var(--accent);
+}
+
+.dark .prose code {
+  background: rgba(15,163,138,0.12);
+}
+
+.prose pre code {
+  @apply bg-transparent p-0 text-inherit;
+}
+
+/* ── Definition lists ── */
+
+.prose dt { @apply font-semibold mt-4; color: var(--text-primary); }
+.prose dd { @apply ml-4 mb-2; color: var(--text-secondary); }
+
+/* ── Scrollbar ── */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }

@@ -1,0 +1,172 @@
+---
+title: Shadow Mode Execution
+description: Fire-and-forget shadow requests to a secondary API. Test new APIs in production without affecting users.
+---
+
+Shadow mode sends each request to a **secondary endpoint** in parallel with the primary. The shadow response is compared or logged, but **never returned to the caller** — the primary response is always used.
+
+> **Rename your staging environment to "production" and test new APIs against real traffic — safely.**
+
+## Basic Usage
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  baseURL: "https://current-api.example.com",
+  shadow: {
+    secondaryBaseURL: "https://new-api.example.com",
+    compareResponse: true,
+    onDifference: (primary, secondary) => {
+      console.log("⚠️ Response mismatch detected");
+      console.log("Primary:", primary.status, primary.data);
+      console.log("Secondary:", secondary.status, secondary.data);
+    },
+  },
+});
+```
+
+Now every request hits both APIs, but the user always gets the current API's response:
+
+```ts
+const res = await client.get("/users/1");
+// res.data → from current-api.example.com (primary)
+// new-api.example.com received the same request silently
+```
+
+## Configuration
+
+```ts
+interface ShadowOptions {
+  /** Enable shadow mode */
+  enabled?: boolean;
+
+  /** Secondary base URL */
+  secondaryBaseURL: string;
+
+  /** Compare primary and secondary responses. Default: false */
+  compareResponse?: boolean;
+
+  /** Called when responses differ (only if compareResponse: true) */
+  onDifference?: (
+    primary: SolvixResponse<any>,
+    secondary: SolvixResponse<any>
+  ) => void;
+}
+```
+
+## Comparison Mode
+
+When `compareResponse: true`, Solvix parses both responses and calls `onDifference` if they don't match:
+
+```ts
+const client = createClient({
+  baseURL: "https://v1-api.example.com",
+  shadow: {
+    secondaryBaseURL: "https://v2-api.example.com",
+    compareResponse: true,
+    onDifference: (primary, secondary) => {
+      // Log to your comparison database
+      logComparison({
+        endpoint: primary.config.url,
+        v1Status: primary.status,
+        v2Status: secondary.status,
+        v1Data: primary.data,
+        v2Data: secondary.data,
+        matches: JSON.stringify(primary.data) === JSON.stringify(secondary.data),
+      });
+    },
+  },
+});
+```
+
+## Shadow Events
+
+`SolvixBus` emits shadow lifecycle events:
+
+```ts
+import { SolvixBus } from "@adityadev13/solvix";
+
+SolvixBus.on("request:shadowStart", (event) => {
+  console.log("Shadow request started:", event.context.url);
+});
+
+SolvixBus.on("request:shadowComplete", (event) => {
+  console.log("Shadow completed:", event.context.response?.status);
+});
+
+SolvixBus.on("request:shadowDifference", (event) => {
+  console.log("Shadow response differs from primary!");
+});
+```
+
+## Shadow + Timing
+
+Shadow requests never affect the primary response timing — the primary response is returned immediately, and the shadow request runs in the background:
+
+```ts
+const res = await client.get("/users");
+// res → returned immediately (primary response)
+
+// Shadow request is still in-flight (or failed) — user doesn't wait
+```
+
+## Real-World Use Case: API Migration
+
+```ts
+// Phase 1: Shadow the new API
+const client = createClient({
+  baseURL: "https://old-api.example.com",
+  shadow: {
+    secondaryBaseURL: "https://new-api.example.com",
+    compareResponse: true,
+    onDifference: (primary, secondary) => {
+      // Collect differences, fix bugs in the new API
+      sendToComparisonDashboard({ primary, secondary });
+    },
+  },
+});
+
+// Phase 2: After fixing all differences, switch to new API
+const client = createClient({
+  baseURL: "https://new-api.example.com", // Switched!
+});
+```
+
+## Security Considerations
+
+Shadow requests should be **flagged** on the secondary endpoint to prevent side effects:
+
+```ts
+const client = createClient({
+  shadow: {
+    secondaryBaseURL: "https://new-api.example.com",
+    compareResponse: true,
+  },
+  hooks: {
+    onRequestStart: (ctx) => {
+      // Flag shadow requests in the header
+      if (ctx.options.shadow) {
+        ctx.options.headers = {
+          ...ctx.options.headers,
+          "X-Shadow-Request": "true",
+        };
+      }
+    },
+  },
+});
+```
+
+## Best Practices
+
+1. **Don't shadow mutations** — POST/PUT/DELETE on the secondary API creates real side effects
+2. **Flag shadow requests** — add a header so the secondary API can distinguish shadow traffic
+3. **Compare responses AFTER both complete** — don't block the primary on shadow results
+4. **Log differences but don't alert** — shadow comparison informs migration, it's not a production alert
+5. **Use for gradual migration** — shadow → compare → fix → switch
+
+## What's Next
+
+- [Custom Transport](/docs/core-api/custom-transport) — replace the underlying fetch
+- [Hooks](/docs/core-api/hooks) — lifecycle callbacks
+- [Logging & Events](/docs/core-api/logging-events-solvixbus) — event monitoring

@@ -1,0 +1,41 @@
+---
+title: Large-Scale API Orchestration
+description: Coordinate complex API workflows with dependency chains, priority queues, and request groups.
+---
+
+```ts
+import { createClient, RequestGroup } from "@adityadev13/solvix";
+
+const api = createClient({
+  baseURL: "https://api.example.com",
+  maxConcurrency: 10,           // Limit concurrent requests
+  dedupe: true,                  // Deduplicate fetches
+  retry: { retries: 2 },
+});
+
+// Load user dashboard with prioritized data loading
+const dashboardGroup = RequestGroup.create("dashboard");
+
+// Step 1: Auth (must complete first)
+await api.post("/auth", credentials, { id: "auth" });
+
+// Step 2: Load user and permissions in parallel
+const [user, permissions] = await Promise.all([
+  api.get("/me", { dependsOn: ["auth"], priority: 1, group: dashboardGroup }),
+  api.get("/permissions", { dependsOn: ["auth"], priority: 2, group: dashboardGroup }),
+]);
+
+// Step 3: Load dashboard data
+const dashboard = await api.get("/dashboard", {
+  dependsOn: ["me", "permissions"],
+  priority: 1,
+  group: dashboardGroup,
+});
+
+// Step 4: Background data (low priority)
+api.get("/analytics", { priority: 10, group: dashboardGroup });
+api.get("/suggestions", { priority: 10, group: dashboardGroup });
+
+// Cleanup: abort if user navigates away
+dashboardGroup.abort();
+```

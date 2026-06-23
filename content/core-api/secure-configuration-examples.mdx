@@ -1,0 +1,46 @@
+---
+title: Secure Configuration Examples
+description: Security-hardened client configurations for production environments.
+---
+
+## Maximum Security
+
+```ts
+const client = createClient({
+  security: {
+    enforceHTTPS: true,
+    allowedDomains: ["api.example.com"],
+    allowedMethods: ["GET", "POST", "PUT", "DELETE"],
+    maskSensitiveHeaders: true,
+    blockInsecureHeaders: true,
+    maxBodySize: 1_000_000,
+    maxResponseSize: 10_000_000,
+    redactSnapshot: true,
+    strictMode: true,
+    preventShadowTokenLeak: true,
+  },
+  csrf: { enabled: true },
+  snapshot: { enabled: true },
+});
+```
+
+## Standard Enterprise Setup
+
+```ts
+const client = createClient({
+  security: {
+    enforceHTTPS: true,
+    allowedDomains: ["api.example.com"],
+    maxResponseSize: 50_000_000,
+  },
+});
+```
+
+## Public API (Minimal)
+
+```ts
+const client = createClient({
+  // Security guards are always on: CRLF protection, forbidden header stripping
+  // Additional layers are opt-in
+});
+```

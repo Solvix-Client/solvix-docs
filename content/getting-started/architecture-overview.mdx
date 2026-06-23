@@ -1,0 +1,101 @@
+---
+title: Architecture Overview
+description: How Solvix's request pipeline works — every stage a request passes through from creation to completion.
+---
+
+Solvix processes every request through a **structured pipeline** — a sequence of stages that handle security, queuing, resilience, transport, and observability. Each stage is optional and only runs when its feature is configured.
+
+## Pipeline Diagram
+
+```
+Request Created
+      ↓
+Security Checks ─── HTTPS enforcement, domain/method allowlisting,
+                      header sanitization, CRLF protection, size guards
+      ↓
+Query Parameter Processing ─── params merge, custom paramsSerializer
+      ↓
+Fingerprinting ─── SHA-256 key for dedup/cache (skipped when unused)
+      ↓
+Deduplication Check ─── If dedupe enabled: return in-flight promise
+      ↓
+Cache Check ─── If cache enabled: return cached response
+      ↓
+Dependency Wait ─── If dependsOn set: wait for dependencies
+      ↓
+Priority Queue ─── If maxConcurrency set: queue + schedule
+      ↓
+Rate Limiter ─── If rate limit enabled: acquire token
+      ↓
+Circuit Breaker ─── If circuit breaker enabled: check health
+      ↓
+Retry Loop ═══════════════════════════════════════════════╗
+   ↓                                                        ║
+   ├─ Header Sanitization (always on)                      ║
+   ├─ Request Body Construction                             ║
+   ├─ Middleware Stack (user-defined)                       ║
+   ├─ Transport Execution (fetch / custom transport)        ║
+   ├─ Response Parsing (JSON, text, stream, etc.)          ║
+   ├─ Response Validation (if validateResponse set)        ║
+   ├─ Cache Storage (if cache enabled, GET only)           ║
+   └─ Error → Retry? → Yes → back to ═════════════════════╝
+                         No  ↓
+Response Returned
+      ↓
+Events Emitted ─── SolvixBus: request:complete / request:error
+      ↓
+Logging ─── Structured log via configured logger
+      ↓
+Metrics Update ─── Counters + histograms updated
+      ↓
+Health Check Tick ─── If health check enabled: update stats
+```
+
+## Key Design Principles
+
+### 1. Opt-In Architecture
+
+No feature adds overhead unless configured. A bare client with no options is equivalent to native `fetch` in performance — just with security guards always active.
+
+### 2. Composition Over Configuration
+
+Complex behaviors are built by composing small, focused stages. Retry logic composes with circuit breaker. Rate limiting respects queue priority. Dedup is cache-aware.
+
+### 3. Observer Pattern
+
+Every stage emits events through `SolvixBus`. You can observe, log, and monitor every request without modifying the pipeline.
+
+### 4. Transport Agnostic
+
+The transport layer is swappable. The default is `fetch`, but you can provide a custom `SolvixTransport` for HTTP/2, gRPC, WebSocket, or mock transports.
+
+## Middleware Architecture
+
+Middleware runs inside the retry loop, before the transport. This means middleware changes are preserved across retries, and middleware can implement its own retry logic.
+
+```ts
+client.use(async (ctx, next) => {
+  console.time(ctx.url);
+  await next();
+  console.timeEnd(ctx.url);
+});
+```
+
+Middleware uses a Koa-style onion model — code before `await next()` runs on the way in, code after runs on the way out.
+
+## Event-Driven Extensibility
+
+`SolvixBus` emits typed events at key lifecycle points:
+
+- `request:start` — request entered the pipeline
+- `request:retry` — about to retry
+- `request:complete` — successful response
+- `request:error` — permanent failure
+- `health:change` — health checker detected state change
+- `request:shadow*` — shadow request lifecycle
+
+## What's Next
+
+- [Quick Start](/docs/getting-started/quick-start) — see the pipeline in action
+- [Middleware System](/docs/core-api/middleware-system) — add custom middleware
+- [Logging & Events](/docs/core-api/logging-events-solvixbus) — observe the pipeline

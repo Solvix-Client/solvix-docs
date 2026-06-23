@@ -1,0 +1,171 @@
+---
+title: Hooks
+description: Lifecycle hooks for request start, completion, errors, retries, circuit breaker events, and progress tracking.
+---
+
+Hooks let you inject custom logic at specific points in the request lifecycle. Unlike middleware which runs in the pipeline, hooks are fire-and-forget callbacks — they observe without blocking.
+
+## Available Hooks
+
+```ts
+interface SolvixHooks {
+  /** Called when a request starts processing */
+  onRequestStart?: (ctx: SolvixContext) => void;
+
+  /** Called when a request completes successfully */
+  onRequestEnd?: (ctx: SolvixContext) => void;
+
+  /** Called before retrying a failed request */
+  onRetry?: (ctx: SolvixContext, attempt: number) => void;
+
+  /** Called when a request fails permanently (after all retries) */
+  onError?: (error: unknown, ctx: SolvixContext) => void;
+
+  /** Called when the circuit breaker opens for a host */
+  onCircuitOpen?: (host: string) => void;
+
+  /** Called periodically during upload with progress info */
+  onUploadProgress?: (progress: ProgressPayload) => void;
+
+  /** Called periodically during download with progress info */
+  onDownloadProgress?: (progress: ProgressPayload) => void;
+}
+```
+
+## Basic Usage
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  hooks: {
+    onRequestStart: (ctx) => {
+      console.log(`→ ${ctx.options.method || "GET"} ${ctx.url}`);
+    },
+    onRequestEnd: (ctx) => {
+      console.log(`← ${ctx.url} (${ctx.response?.status}) in ${ctx.meta.duration}ms`);
+    },
+    onError: (error, ctx) => {
+      console.error(`✗ ${ctx.url}: ${error}`);
+    },
+  },
+});
+```
+
+## Real-World Use Cases
+
+### Sentry/Datadog Error Tracking
+
+```ts
+const client = createClient({
+  hooks: {
+    onError: (error, ctx) => {
+      Sentry.captureException(error, {
+        tags: { url: ctx.url, correlationId: ctx.meta.correlationId },
+      });
+    },
+    onCircuitOpen: (host) => {
+      console.error(`⚠️ Circuit opened for ${host}`);
+      // Alert PagerDuty
+    },
+  },
+});
+```
+
+### Request Logging with Correlation IDs
+
+```ts
+const client = createClient({
+  correlation: { enabled: true },
+  logger: console,
+  hooks: {
+    onRequestStart: (ctx) => {
+      console.log(`[${ctx.meta.correlationId}] ${ctx.options.method} ${ctx.url}`);
+    },
+    onRequestEnd: (ctx) => {
+      console.log(`[${ctx.meta.correlationId}] ${ctx.response?.status} ${ctx.meta.duration}ms`);
+    },
+  },
+});
+```
+
+### Retry Monitoring
+
+```ts
+const client = createClient({
+  retry: { retries: 3 },
+  hooks: {
+    onRetry: (ctx, attempt) => {
+      console.warn(`Retry ${attempt}/${ctx.options.retry?.retries || 3} for ${ctx.url}`);
+    },
+  },
+});
+```
+
+### Upload Progress Bar
+
+```ts
+const client = createClient({
+  hooks: {
+    onUploadProgress: ({ loaded, total, percent }) => {
+      progressBar.style.width = `${percent}%`;
+      console.log(`Uploaded ${loaded}/${total} bytes`);
+    },
+  },
+});
+
+// Upload with progress tracking
+const file = new Blob([largeData]);
+await client.post("/upload", file, { bodyType: "blob" });
+```
+
+### Download Progress
+
+```ts
+const client = createClient({
+  hooks: {
+    onDownloadProgress: ({ loaded, total, percent }) => {
+      if (total) {
+        console.log(`Download: ${percent?.toFixed(1)}%`);
+      }
+    },
+  },
+});
+
+await client.get("/large-file.zip", { responseType: "blob" });
+```
+
+## Hooks vs Events
+
+| Aspect | Hooks | SolvixBus Events |
+|--------|-------|------------------|
+| Scope | Per-client | Global (all clients) |
+| Configuration | `createClient({ hooks })` | `SolvixBus.on(...)` |
+| Context access | Full mutable context | Event snapshot |
+| Use case | Per-client setup | Cross-cutting monitoring |
+
+Use **hooks** for client-specific logic (logging per service).
+Use **SolvixBus** for cross-cutting concerns (global metrics, alerting).
+
+## Hooks vs Middleware
+
+| Aspect | Hooks | Middleware |
+|--------|-------|------------|
+| Execution | Fire-and-forget callback | Pipeline stage |
+| Blocking | Never blocks | Blocks pipeline (await next()) |
+| Mutation | Can read, careful with writes | Can modify request/response |
+| Use case | Observing, logging, metrics | Transforming, auth, caching |
+
+## Best Practices
+
+1. **Keep hooks fast** — they run synchronously; async hooks delay the request
+2. **Don't mutate `ctx` in hooks** — use middleware for mutations
+3. **Use `onRetry` for retry monitoring** — detect retry storms early
+4. **Progress hooks for large uploads/downloads** — gives users visibility into long transfers
+5. **Combine with `SolvixBus` for cross-cutting** — hooks per client, events global
+
+## What's Next
+
+- [Middleware System](/docs/core-api/middleware-system) — pipeline interceptors
+- [Logging & Events](/docs/core-api/logging-events-solvixbus) — global event bus
+- [Progress Events](/docs/core-api/progress-events) — upload/download tracking

@@ -1,0 +1,23 @@
+---
+title: Response Caching
+description: In-memory caching for GET requests with configurable TTL. Automatic cache invalidation.
+---
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  baseURL: "https://api.example.com",
+  cache: { ttl: 60000 }, // Cache for 60 seconds
+});
+
+// First call — hits the network
+const res1 = await client.get("/users");
+
+// Second call within 60s — returns cached response (instant)
+const res2 = await client.get("/users");
+
+// After 60s — cache expires, next call hits the network
+```
+
+Caching is automatic for GET requests. The cache key is based on the request URL, method, body, and headers (via SHA-256 fingerprint).

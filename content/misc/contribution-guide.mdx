@@ -1,0 +1,110 @@
+---
+title: Contribution Guide
+description: How to contribute to Solvix — setup, code style, testing, and PR guidelines.
+---
+
+## Quick Start
+
+```bash
+git clone https://github.com/Solvix-Client/solvix.git
+cd solvix
+npm install
+npm run build
+npx vitest run
+```
+
+## Project Structure
+
+```
+src/
+├── core/           # Client, middleware, context, transport, bus, priority queue
+├── resilience/     # Circuit breaker, rate limiter, retry engine
+├── security/       # Header sanitization, size guards, snapshot redaction
+├── store/          # Cache, dedup, ETag, inflight registry, dependency registry
+├── streaming/      # SSE, JSON lines, raw stream handling
+├── parsing/        # Safe JSON response parsing
+├── node/           # Node.js proxy, TLS (uses undici)
+└── utils/          # URL resolution, fingerprinting, profiling
+
+tests/              # Vitest test files
+bench/              # tinybench benchmark files
+```
+
+## Development Flow
+
+### Branch
+
+Work on the `dev` branch or a feature branch off it.
+
+```bash
+git checkout -b feature/your-feature
+```
+
+### Code
+
+- TypeScript strict mode — all code must compile with `tsc --noEmit`
+- `const` over `let`, `let` over mutable object patterns
+- Feature options should be **opt-in** (disabled by default)
+- Zero external runtime dependencies — devDependencies only
+- Relative imports only (no path aliases in source code)
+
+### Test
+
+```bash
+npx vitest           # Watch mode
+npx vitest run       # One-shot
+```
+
+All 171+ tests must pass. Add tests for new features and bug fixes.
+
+### Typecheck
+
+```bash
+npm run typecheck
+```
+
+### Build
+
+```bash
+npm run build
+```
+
+Verifies ESM, CJS, and DTS output all compile correctly.
+
+### Benchmark (if performance-impacting)
+
+```bash
+npm run bench:all
+```
+
+## Pull Request Guidelines
+
+- Keep PRs focused on one concern
+- Add tests for new features or bug fixes
+- Add JSDoc for any new public API surface
+- Run full test suite before submitting
+- Include a changeset if the change adds or modifies behavior:
+
+```bash
+npx changeset
+```
+
+Commit the generated markdown file.
+
+## Release Flow
+
+1. Development on `dev` branch
+2. Create `release/v1.0.0` branch from `dev`
+3. Merge `release/v1.0.0` into `main`
+4. Tag and publish: `npx changeset publish`
+5. Push to GitHub
+
+## Code Review
+
+PRs are reviewed for:
+
+- Correctness (edge cases, error handling)
+- Performance (no unnecessary allocations, O(n) → O(log n) where possible)
+- Type safety (strict mode, no `any` without justification)
+- Documentation (JSDoc on public APIs)
+- Test coverage (new code should be tested)

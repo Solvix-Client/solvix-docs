@@ -1,0 +1,81 @@
+---
+title: Installation
+description: Install Solvix via npm, pnpm, yarn, or bun for Node.js, browser, Deno, and edge runtimes.
+---
+
+Solvix works in Node.js 18+, modern browsers, Deno, Bun, and edge runtimes.
+
+## npm
+
+```bash
+npm install @adityadev13/solvix
+```
+
+## pnpm
+
+```bash
+pnpm add @adityadev13/solvix
+```
+
+## yarn
+
+```bash
+yarn add @adityadev13/solvix
+```
+
+## bun
+
+```bash
+bun add @adityadev13/solvix
+```
+
+## CDN (Browser)
+
+```html
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@adityadev13/solvix/dist/index.js";
+  // or via unpkg:
+  // import { createClient } from "https://unpkg.com/@adityadev13/solvix/dist/index.js";
+</script>
+```
+
+## Node.js Proxy/TLS Features
+
+If you need HTTP proxy support or custom TLS/SSL configuration (mTLS, self-signed certificates), install undici as a peer dependency:
+
+```bash
+npm install undici
+```
+
+These features are automatically disabled when undici is not available — no error, no polyfill.
+
+## Verifying Installation
+
+```bash
+node -e "const { createClient } = require('@adityadev13/solvix'); console.log('OK', typeof createClient);"
+```
+
+For ESM:
+
+```bash
+node --input-type=module -e "import { createClient } from '@adityadev13/solvix'; console.log('OK', typeof createClient);"
+```
+
+## Requirements
+
+| Runtime | Minimum Version |
+|---------|----------------|
+| Node.js | 18+ |
+| Chrome | 87+ |
+| Firefox | 90+ |
+| Safari | 15+ |
+| Edge | 90+ |
+| Deno | 1.30+ |
+| Bun | 1.0+ |
+| Cloudflare Workers | Latest |
+| Vercel Edge | Latest |
+
+## What's Next
+
+- [Quick Start](/docs/getting-started/quick-start) — build your first client
+- [Configuration Overview](/docs/getting-started/configuration-overview) — all available options

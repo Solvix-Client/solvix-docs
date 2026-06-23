@@ -1,0 +1,68 @@
+---
+title: Snapshot Debugging
+description: Capture full request snapshots for debugging. URL, headers, body, timing, and error info in a single object.
+---
+
+Snapshot mode captures everything about a request — URL, method, headers, body, status, timing, errors, and retries — into a structured object you can log, store, or inspect.
+
+> **Stop adding console.log statements to debug HTTP. Enable snapshot mode and get everything.**
+
+## Basic Usage
+
+```ts
+const client = createClient({
+  snapshot: { enabled: true },
+});
+
+const res = await client.get("/users");
+// res.meta.snapshot contains the full request snapshot
+```
+
+## Snapshot Contents
+
+```ts
+{
+  url: "/users",
+  method: "GET",
+  status: 200,
+  duration: 332,
+  retries: 0,
+  headers: { "content-type": "application/json" },  // Sensitive headers redacted
+  requestBody: null,
+  responseBody: { id: 1, name: "Alice" },  // Captured before parsing
+  timeline: [{ stage: "created", timestamp: 123 }, ...],
+  error: undefined,
+  timestamp: 1700000000455,
+}
+```
+
+## Configuration
+
+```ts
+interface SnapshotOptions {
+  enabled?: boolean;
+  includeHeaders?: boolean;  // Include headers in snapshot. Default: true
+  includeBody?: boolean;     // Include body in snapshot. Default: false
+}
+```
+
+Sensitive headers are **automatically redacted** — `authorization`, `cookie`, `x-api-key`, and any header containing `token` are replaced with `[REDACTED]`.
+
+## Use Cases
+
+**Debugging production issues:**
+```ts
+SolvixBus.on("request:error", (event) => {
+  const snapshot = event.context.meta?.snapshot;
+  if (snapshot) {
+    console.log("Request snapshot:", JSON.stringify(snapshot, null, 2));
+    // Store in your error tracking system
+  }
+});
+```
+
+**Performance analysis:**
+```ts
+const res = await client.get("/slow-endpoint");
+console.log(res.meta.snapshot?.duration); // Total time
+```

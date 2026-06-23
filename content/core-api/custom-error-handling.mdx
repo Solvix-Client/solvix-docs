@@ -1,0 +1,65 @@
+---
+title: Custom Error Handling
+description: Handle errors from different stages of the pipeline — network, validation, circuit breaker, and rate limit errors.
+---
+
+Solvix categorizes errors by their source. Handle them using `onError` hooks, `SolvixBus`, or try/catch.
+
+## Error Sources
+
+```ts
+// Network errors (fetch failed, DNS, timeout)
+client.get("/offline").catch(e => e.message === "fetch failed");
+
+// HTTP errors (non-2xx)
+client.get("/404").catch(e => e.message === "Request failed with status 404");
+
+// Validation errors
+client.get("/bad-data").catch(e => e.message === "Validation failed: missing id");
+
+// Circuit breaker errors
+client.get("/dead-service").catch(e => e.message?.includes("Circuit breaker is open"));
+
+// Rate limit errors
+client.get("/burst").catch(e => e.message === "Rate limit exceeded");
+```
+
+## Global Error Handler
+
+```ts
+const client = createClient({
+  hooks: {
+    onError: (error, ctx) => {
+      // All errors pass through here
+      console.error(`[${ctx.meta.correlationId}] ${ctx.url}: ${error}`);
+
+      if (error?.message?.includes("Circuit breaker")) {
+        alertPagerDuty(ctx.url);
+      }
+    },
+  },
+});
+```
+
+## Error Classification
+
+```ts
+SolvixBus.on("request:error", (event) => {
+  const error = event.context.error;
+  const url = event.context.url;
+
+  if (error?.name === "AbortError") {
+    // Timeout
+    incrementMetric("timeout", url);
+  } else if (error?.status >= 500) {
+    // Server error
+    incrementMetric("server_error", url);
+  } else if (error?.status === 429) {
+    // Rate limited
+    incrementMetric("rate_limited", url);
+  } else if (error?.message?.includes("Circuit breaker")) {
+    // Circuit open
+    incrementMetric("circuit_open", url);
+  }
+});
+```

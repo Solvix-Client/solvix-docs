@@ -1,0 +1,71 @@
+---
+title: ETag / Conditional Requests
+description: Reduce bandwidth with conditional GET requests using ETag headers. Cache-aware, automatic.
+---
+
+Solvix supports **ETag-based conditional requests**. When enabled, Solvix stores the `ETag` response header and sends it as `If-None-Match` on subsequent requests. If the resource hasn't changed, the server returns `304 Not Modified` and Solvix returns the cached response.
+
+> **Don't re-download unchanged resources. ETags save bandwidth and improve latency.**
+
+## Basic Usage
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  baseURL: "https://api.example.com",
+  etag: { enabled: true },
+});
+
+// First request: hits the network, caches the ETag
+const res1 = await client.get("/large-data");
+
+// Second request: sends If-None-Match header
+// If unchanged: returns cached response immediately
+// If changed: returns new response with new ETag
+const res2 = await client.get("/large-data");
+```
+
+## How It Works
+
+```
+First Request:
+GET /large-data
+← 200 OK, ETag: "abc123", { data: [...] }
+→ Store: "/large-data" → ETag "abc123", response data
+
+Second Request:
+GET /large-data
+If-None-Match: "abc123"
+← 304 Not Modified (body empty)
+→ Return stored response (same as first)
+```
+
+## ETag + In-Memory Cache
+
+Combine with `cache` for two-layer caching:
+
+```ts
+const client = createClient({
+  baseURL: "https://api.example.com",
+  cache: { ttl: 60000 },     // In-memory cache, 60s TTL
+  etag: { enabled: true },    // Conditional requests after TTL expires
+});
+
+// First minute: responses come from in-memory cache (instant)
+// After TTL expires: sends If-None-Match (no body if unchanged)
+// Only re-downloads when the resource actually changes
+```
+
+## Best Practices
+
+1. **Combine with `cache`** — in-memory cache for rapid repeat access, ETag for cache revalidation
+2. **Works best for large, infrequently-changing resources** — API responses, config files, static data
+3. **ETags are per-URL** — different URLs have independent ETag stores
+4. **No TTL configuration needed** — ETags are always fresh until the server says otherwise
+
+## What's Next
+
+- [Cache](/docs/core-api/cache) — in-memory response caching
+- [Request Deduplication](/docs/core-api/request-deduplication) — eliminate redundant in-flight requests
+- [Fingerprint](/docs/core-api/fingerprint) — customize caching and dedup keys

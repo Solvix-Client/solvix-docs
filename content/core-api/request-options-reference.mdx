@@ -1,0 +1,464 @@
+---
+title: Request Options Reference
+description: Complete reference for every Solvix option — core, resilience, security, observability, auth, and advanced.
+---
+
+This is the complete reference for all `SolvixOptions` fields. Every option can be set globally in `createClient()` and overridden per-request.
+
+## Core Options
+
+### `baseURL`
+> `string` — Base URL prepended to all relative request URLs.
+
+```ts
+const client = createClient({ baseURL: "https://api.example.com" });
+client.get("/users"); // → https://api.example.com/users
+```
+
+### `timeout`
+> `number` (ms) — Request timeout. Uses AbortController internally.
+
+```ts
+client.get("/slow", { timeout: 30000 }); // 30 seconds
+```
+
+### `method`
+> `HttpMethod` — HTTP method. Auto-set by `.get()`, `.post()`, etc.
+
+### `headers`
+> `Record<string, string>` — Default headers for every request.
+
+```ts
+const client = createClient({
+  headers: { "X-Client-Version": "1.0" },
+});
+```
+
+### `params`
+> `Record<string, any>` — Query parameters merged into the URL.
+
+```ts
+client.get("/search", { params: { q: "solvix", page: 1 } });
+// → /search?q=solvix&page=1
+```
+
+### `paramsSerializer`
+> `(params: Record<string, any>) => string` — Custom query parameter serializer.
+
+```ts
+client.get("/search", {
+  params: { tags: ["a", "b"] },
+  paramsSerializer: (params) =>
+    Object.entries(params)
+      .map(([k, v]) => (Array.isArray(v) ? v.map(i => `${k}[]=${i}`).join("&") : `${k}=${v}`))
+      .join("&"),
+});
+// → /search?tags[]=a&tags[]=b
+```
+
+### `body`
+> `unknown` — Request body. Serialized according to `bodyType`.
+
+### `bodyType`
+> `"json"` | `"form"` | `"multipart"` | `"text"` | `"blob"` | `"arrayBuffer"` | `"raw"` — How to serialize the body.
+
+```ts
+client.post("/upload", formData, { bodyType: "multipart" });
+client.post("/echo", "raw text", { bodyType: "text" });
+```
+
+### `responseType`
+> `"json"` | `"text"` | `"blob"` | `"arrayBuffer"` | `"formData"` | `"stream"` | `"raw"` — How to parse the response.
+
+```ts
+client.get("/data.csv", { responseType: "text" });
+client.get("/file.bin", { responseType: "blob" });
+```
+
+### `stream`
+> `boolean` — Enable response streaming as an async iterable.
+
+### `sse`
+> `boolean` — Parse Server-Sent Events from the response stream.
+
+### `parseJsonLines`
+> `boolean` — Parse NDJSON (newline-delimited JSON).
+
+### `validateStatus`
+> `(status: number) => boolean` — Custom status validation.
+
+```ts
+const client = createClient({
+  validateStatus: (status) => status < 500, // Accept 4xx
+});
+```
+
+### `validateResponse`
+> `(data: unknown) => any` — Response schema validation. Compatible with Zod, Valibot.
+
+```ts
+import { z } from "zod";
+const UserSchema = z.object({ id: z.number(), name: z.string() });
+
+const client = createClient({
+  validateResponse: (data) => UserSchema.parse(data),
+});
+```
+
+### `fetch`
+> `RequestInit` — Raw fetch options (`credentials`, `mode`, `redirect`, etc.).
+
+```ts
+client.get("/api", { fetch: { credentials: "include" } });
+```
+
+## Resilience Options
+
+### `retry`
+> `number | RetryOptions` — Automatic retry configuration.
+
+```ts
+// Simple count
+client.get("/data", { retry: 3 });
+
+// Full config
+client.get("/data", {
+  retry: { retries: 3, baseDelay: 200, factor: 2, jitter: true },
+});
+```
+
+[Full retry documentation →](/docs/core-api/retry-engine)
+
+### `circuitBreaker`
+> `CircuitBreakerOptions` — Per-host circuit breaker.
+
+```ts
+client.get("/data", {
+  circuitBreaker: { failureThreshold: 5, resetTimeout: 15000 },
+});
+```
+
+[Full circuit breaker documentation →](/docs/core-api/circuit-breaker)
+
+### `rateLimit`
+> `RateLimitOptions` — Token bucket rate limiter.
+
+```ts
+client.get("/data", {
+  rateLimit: { capacity: 10, refillRate: 5, interval: 1000 },
+});
+```
+
+[Full rate limiting documentation →](/docs/core-api/rate-limiting)
+
+### `dedupe`
+> `boolean` — Deduplicate in-flight requests.
+
+```ts
+const client = createClient({ dedupe: true });
+// 100 identical calls → 1 network request
+```
+
+[Full dedup documentation →](/docs/core-api/request-deduplication)
+
+### `cache`
+> `boolean | CacheOptions` — In-memory response caching.
+
+```ts
+const client = createClient({
+  cache: { ttl: 60000 }, // Cache GET responses for 60s
+});
+```
+
+### `maxConcurrency`
+> `number` — Maximum concurrent requests. Default: Infinity.
+
+```ts
+const client = createClient({ maxConcurrency: 10 });
+```
+
+### `priority`
+> `number` — Queue priority (lower = higher). Default: 5.
+
+```ts
+client.get("/critical", { priority: 1 });  // High priority
+client.get("/background", { priority: 10 }); // Low priority
+```
+
+### `queue`
+> `QueueOptions` — Queue behavior configuration.
+
+```ts
+client.get("/data", {
+  queue: { maxQueueSize: 100, strategy: "priority" },
+});
+```
+
+### `fallbackURLs`
+> `string[]` — Backup URLs tried when primary fails.
+
+```ts
+client.get("/data", {
+  fallbackURLs: ["https://backup1.example.com/api", "https://backup2.example.com/api"],
+});
+```
+
+### `fingerprint`
+> `FingerprintOptions` — Customize cache/dedup key fingerprinting.
+
+## Security Options
+
+### `security`
+> `SolvixSecurityOptions` — Multi-layer security configuration.
+
+```ts
+client.get("/data", {
+  security: {
+    enforceHTTPS: true,
+    allowedDomains: ["api.example.com"],
+    allowedMethods: ["GET", "POST"],
+    maxBodySize: 1_000_000,
+    maxResponseSize: 10_000_000,
+  },
+});
+```
+
+[Full security documentation →](/docs/core-api/https-enforcement)
+
+### `csrf`
+> `CSRFOptions` — CSRF token injection from cookie to header.
+
+```ts
+client.post("/data", body, {
+  csrf: { enabled: true }, // Injects X-XSRF-TOKEN from XSRF-TOKEN cookie
+});
+```
+
+### `tls`
+> `TLSOptions` — TLS/SSL configuration (Node.js, requires undici).
+
+```ts
+client.get("https://internal.example.com", {
+  tls: { rejectUnauthorized: false }, // Self-signed certs
+});
+```
+
+### `proxy`
+> `ProxyOptions` — HTTP proxy configuration (Node.js, requires undici).
+
+```ts
+client.get("https://api.example.com", {
+  proxy: { host: "gateway.corp.com", port: 8080 },
+});
+```
+
+### `allowedOrigins`
+> `string[]` — Allowed CORS origins (browser).
+
+### `avoidPreflight`
+> `boolean` — Keep requests simple to avoid CORS preflight.
+
+## Observability Options
+
+### `timeline`
+> `TimelineOptions` — 15-stage request timeline.
+
+```ts
+const client = createClient({
+  timeline: { enabled: true },
+});
+
+const res = await client.get("/data");
+console.log(res.meta.timeline);
+// [{ stage: "created", timestamp: 1234 }, ...]
+```
+
+### `profiling`
+> `ProfilingOptions` — Performance profiling summary.
+
+```ts
+const client = createClient({
+  profiling: { enabled: true },
+});
+
+const res = await client.get("/data");
+console.log(res.meta.profile);
+// { totalMs: 102, networkMs: 95, parseMs: 0.5, retryCount: 0 }
+```
+
+### `logger`
+> `SolvixLogger` — Structured logger interface. Compatible with `console`, `pino`, `winston`.
+
+```ts
+const client = createClient({ logger: console });
+
+// Or pino:
+import pino from "pino";
+const client = createClient({ logger: pino() });
+```
+
+### `correlation`
+> `CorrelationOptions` — Auto-assign X-Request-ID header.
+
+```ts
+const client = createClient({
+  correlation: { enabled: true },
+});
+```
+
+### `metrics`
+> `MetricsOptions` — Aggregated request metrics.
+
+```ts
+const client = createClient({
+  metrics: { enabled: true },
+});
+
+const m = client.metrics();
+console.log(m.totalRequests, m.successCount, m.failureCount);
+```
+
+### `tracing`
+> `TracingOptions` — W3C Trace Context propagation.
+
+```ts
+const client = createClient({
+  tracing: { enabled: true },
+});
+// Adds traceparent header: 00-{traceId}-{spanId}-01
+```
+
+### `healthCheck`
+> `HealthCheckOptions` — Periodic endpoint health pinging.
+
+```ts
+const client = createClient({
+  healthCheck: {
+    enabled: true,
+    endpoint: "/health",
+    intervalMs: 10000,
+  },
+});
+
+console.log(client.healthCheck?.isHealthy());
+```
+
+### `snapshot`
+> `SnapshotOptions` — Capture full request snapshot for debugging.
+
+```ts
+const client = createClient({
+  snapshot: { enabled: true, includeHeaders: true, includeBody: true },
+});
+```
+
+### `devMode`
+> `boolean` — Development-mode warnings for misconfigurations.
+
+```ts
+const client = createClient({
+  devMode: true, // Warns about common mistakes
+});
+```
+
+## Auth Options
+
+### `auth`
+> `AuthOptions` — Automatic token refresh (stampede-safe).
+
+```ts
+const client = createClient({
+  auth: {
+    refreshToken: async () => {
+      const res = await fetch("/auth/refresh");
+      return (await res.json()).token;
+    },
+    attachToken: (token, ctx) => {
+      ctx.options.headers = { ...ctx.options.headers, Authorization: `Bearer ${token}` };
+    },
+  },
+});
+```
+
+### `cookieJar`
+> `CookieJarOptions` — In-memory cookie storage.
+
+```ts
+const client = createClient({
+  cookieJar: { enabled: true },
+});
+```
+
+### `etag`
+> `ETagOptions` — Conditional GET support.
+
+```ts
+const client = createClient({
+  etag: { enabled: true },
+});
+```
+
+## Advanced Options
+
+### `hooks`
+> `SolvixHooks` — Lifecycle callbacks.
+
+[Full hooks documentation →](/docs/core-api/hooks)
+
+### `transport`
+> `SolvixTransport` — Custom transport function.
+
+```ts
+const client = createClient({
+  transport: async (url, init) => {
+    console.log(`→ ${init.method} ${url}`);
+    return fetch(url, init);
+  },
+});
+```
+
+### `transformRequest`
+> `(body, headers) => any` — Transform body and headers before sending.
+
+### `transformResponse`
+> `(response) => any` — Transform the raw Response after receiving.
+
+### `group`
+> `RequestGroup` — Attach to a group for batch abort.
+
+```ts
+import { RequestGroup } from "@adityadev13/solvix";
+const group = RequestGroup.create("search");
+client.get("/search", { group });
+group.abort(); // Cancel all requests in group
+```
+
+### `id` and `dependsOn`
+> `string` and `string[]` — Dependency chain support.
+
+```ts
+await client.get("/auth", { id: "auth" });
+await client.get("/profile", { dependsOn: ["auth"] });
+```
+
+### `shadow`
+> `ShadowOptions` — Shadow requests to secondary API.
+
+```ts
+client.get("/data", {
+  shadow: {
+    secondaryBaseURL: "https://new-api.example.com",
+    compareResponse: true,
+    onDifference: (primary, secondary) => console.log("Diff detected"),
+  },
+});
+```
+
+### `offline`
+> `OfflineOptions` — Offline request queuing (browser).
+
+```ts
+const client = createClient({
+  offline: { enabled: true, persist: true },
+});
+```

@@ -1,0 +1,184 @@
+---
+title: Middleware System
+description: Extend Solvix with custom Koa-style middleware. Modify requests, responses, and context in the pipeline.
+---
+
+Solvix supports **Koa-style middleware** — async functions that receive the request context and a `next()` callback. Middleware can modify the request before it's sent, the response after it's received, or wrap the entire pipeline.
+
+> **Interceptors are a good idea, but middleware is better. Middleware composes — interceptors stack linearly.**
+
+## Basic Middleware
+
+```ts
+import { createClient, type SolvixMiddleware } from "@adityadev13/solvix";
+
+const client = createClient({ baseURL: "https://api.example.com" });
+
+// Timing middleware — measures request duration
+client.use(async (ctx, next) => {
+  const start = Date.now();
+  await next();
+  console.log(`${ctx.url} → ${ctx.response?.status} (${Date.now() - start}ms)`);
+});
+
+await client.get("/users");
+// Logs: "/users → 200 (142ms)"
+```
+
+## How Middleware Works
+
+Middleware follows the **onion model** — code before `await next()` runs on the way in (before the request), code after runs on the way out (after the response):
+
+```
+Request → [middleware 1] → [middleware 2] → [transport] → [middleware 2] → [middleware 1] → Response
+               ↓                ↓                           ↑                  ↑
+            pre-req          pre-req                     post-resp         post-resp
+```
+
+## Real-World Use Cases
+
+### Auth Token Injection
+
+```ts
+// Inject an auth token into every request
+client.use(async (ctx, next) => {
+  const token = await getAuthToken();
+  ctx.options.headers = {
+    ...ctx.options.headers,
+    Authorization: `Bearer ${token}`,
+  };
+  await next();
+});
+```
+
+### Request Logging
+
+```ts
+client.use(async (ctx, next) => {
+  console.log(`→ ${ctx.options.method || "GET"} ${ctx.url}`);
+  await next();
+  console.log(`← ${ctx.response?.status} ${ctx.url}`);
+});
+```
+
+### Error Handling Wrapper
+
+```ts
+client.use(async (ctx, next) => {
+  try {
+    await next();
+  } catch (error) {
+    console.error(`Request failed: ${ctx.url}`, error);
+    // Add extra context to the error
+    ctx.error = error;
+    throw error;
+  }
+});
+```
+
+### Response Transformation
+
+```ts
+interface ApiResponse<T> {
+  data: T;
+  error?: string;
+}
+
+client.use(async (ctx, next) => {
+  await next();
+
+  if (ctx.response) {
+    const body = await ctx.response.json();
+    if (body.error) {
+      throw new Error(body.error);
+    }
+  }
+});
+```
+
+### Request Retry with Delay
+
+```ts
+client.use(async (ctx, next) => {
+  let lastError: unknown;
+
+  for (let i = 0; i < 3; i++) {
+    try {
+      await next();
+      return; // Success — exit middleware
+    } catch (error) {
+      lastError = error;
+      await new Promise(r => setTimeout(r, 1000 * Math.pow(2, i)));
+    }
+  }
+
+  throw lastError;
+});
+```
+
+## Middleware + Solvix Features
+
+Middleware runs **inside** the retry loop, before the transport. This means:
+
+- Middleware runs on **every retry** attempt
+- Middleware can modify `ctx.url` and `ctx.options` — changes persist across retries
+- Middleware **cannot** bypass the circuit breaker or rate limiter (they run before the retry loop)
+
+```
+Retry Loop:
+  → Rate Limit Check
+  → Circuit Breaker Check
+  → Middleware Stack (user-defined)
+  → Transport (fetch/custom)
+  → Response/Error → Retry? → back to top
+```
+
+## Middleware Order
+
+Middleware is executed in the order it was registered:
+
+```ts
+client.use(middleware1); // Runs first (outermost)
+client.use(middleware2); // Runs second
+client.use(middleware3); // Runs third (innermost — closest to transport)
+
+// When a request flows through:
+// middleware1 → middleware2 → middleware3 → transport → middleware3 → middleware2 → middleware1
+```
+
+## Error Handling in Middleware
+
+If a middleware throws, subsequent middleware and the transport are skipped:
+
+```ts
+client.use(async (ctx, next) => {
+  throw new Error("Block all requests");
+});
+
+// This will never reach the transport
+await client.get("/users"); // throws "Block all requests"
+```
+
+## Middleware vs Hooks
+
+| Feature | Middleware | Hooks |
+|---------|-----------|-------|
+| Can modify request | ✅ Yes | ⚠️ Limited |
+| Can modify response | ✅ Yes | ❌ No |
+| Can block/abort | ✅ Yes | ❌ No |
+| Runs on retries | ✅ Yes | ✅ Yes |
+| Use case | Transformations, auth, validation | Logging, monitoring, metrics |
+
+## Best Practices
+
+1. **Always call `await next()`** — otherwise the request stops at your middleware
+2. **Keep middleware focused** — one concern per middleware
+3. **Handle errors** — wrap `await next()` in try/catch for error tracking
+4. **Don't mutate `ctx.options.group`** — it's used by the request group system
+5. **Test middleware independently** — create a mock context and call your middleware with it
+
+## What's Next
+
+- [Hooks](/docs/core-api/hooks) — lifecycle callbacks vs middleware
+- [Custom Transport](/docs/core-api/custom-transport) — replacing the network layer
+- [Transform Request/Response](/docs/core-api/transform-request) — built-in transformation options

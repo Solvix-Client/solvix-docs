@@ -1,0 +1,79 @@
+---
+title: Why Solvix
+description: How Solvix compares to Axios, Got, Ky, and native fetch across 25+ enterprise features.
+---
+
+There are many HTTP clients in the JavaScript ecosystem. Here's why Solvix exists and what makes it different.
+
+## The Problem with Traditional HTTP Clients
+
+Most HTTP clients focus on one thing: sending requests and receiving responses. Everything else — retries, security, observability, queue management — is left to the developer.
+
+**Result:** Production codebases end up with ad-hoc retry wrappers, manual token refresh logic, scattered logging, and inconsistent error handling.
+
+## Feature Comparison
+
+| Feature | Solvix | Axios | Got | Ky | fetch |
+|---------|--------|-------|-----|-----|-------|
+| Retry with backoff + jitter | ✅ Built-in | ❌ (plugin) | ✅ | ❌ | ❌ |
+| Circuit breaker | ✅ Built-in | ❌ | ❌ | ❌ | ❌ |
+| Rate limiter (token bucket) | ✅ Built-in | ❌ | ❌ | ❌ | ❌ |
+| Request deduplication | ✅ Built-in | ❌ | ❌ | ❌ | ❌ |
+| Priority queue + concurrency | ✅ Built-in | ❌ | ❌ | ❌ | ❌ |
+| SSE / JSON Lines streaming | ✅ Built-in | ❌ | ❌ | ❌ | ❌ |
+| W3C distributed tracing | ✅ Built-in | ❌ | ❌ | ❌ | ❌ |
+| Health checks | ✅ Built-in | ❌ | ❌ | ❌ | ❌ |
+| Correlation IDs | ✅ Built-in | ❌ | ❌ | ❌ | ❌ |
+| Metrics (counters + histograms) | ✅ Built-in | ❌ | ❌ | ❌ | ❌ |
+| Request timeline & profiling | ✅ Built-in | ❌ | ❌ | ❌ | ❌ |
+| Snapshot debugging | ✅ Built-in | ❌ | ❌ | ❌ | ❌ |
+| Shadow mode (dual API testing) | ✅ Built-in | ❌ | ❌ | ❌ | ❌ |
+| Token refresh (stampede-safe) | ✅ Built-in | ✅ | ❌ | ❌ | ❌ |
+| CSRF protection | ✅ Built-in | ❌ | ❌ | ❌ | ❌ |
+| Cookie jar (Node.js) | ✅ Built-in | ❌ | ✅ | ❌ | ❌ |
+| ETag / conditional requests | ✅ Built-in | ❌ | ✅ | ❌ | ❌ |
+| Fallback URLs | ✅ Built-in | ❌ | ❌ | ❌ | ❌ |
+| Custom middleware (Koa-style) | ✅ Built-in | ✅ (interceptors) | ❌ | ✅ (hooks) | ❌ |
+| Custom transport | ✅ Built-in | ❌ | ❌ | ❌ | ❌ |
+| Upload/download progress | ✅ Built-in | ✅ | ✅ | ❌ | ❌ |
+| HTTP proxy + custom TLS | ✅ (via undici) | ✅ | ✅ | ❌ | ❌ |
+| **Bundle size** | **33 KB** | ~52 KB | ~42 KB | ~12 KB | 0 KB |
+
+## Where Solvix Excels
+
+### 1. Fully Integrated Pipeline
+
+In Solvix, every feature plugs into a single request pipeline. Retries interact with the circuit breaker. Rate limiting respects queue priority. Deduplication is aware of caching. Features don't fight each other — they compose.
+
+### 2. True Observability
+
+Solvix doesn't just send requests — it traces them. Every request gets a correlation ID, a W3C traceparent header, a 15-stage timeline, and performance metrics. You can subscribe to lifecycle events globally via [SolvixBus](/docs/core-api/logging-events-solvixbus).
+
+### 3. Enterprise Security by Default
+
+CRLF injection protection, forbidden header stripping, and snapshot redaction are always on. Additional layers (HTTPS enforcement, domain allowlisting, CSRF protection, size guards) are one config field away.
+
+### 4. No External Dependencies
+
+Solvix has zero runtime dependencies (except `undici` for proxy/TLS features, which is optional). The entire library is a single, self-contained build.
+
+## Where Solvix Differs in Philosophy
+
+- **Opt-in, not opt-out** — features are disabled by default. You enable what you need.
+- **Observability-first** — every feature emits events, logs, and metrics automatically.
+- **Middleware over configuration** — complex logic goes into custom middleware, not config bloat.
+- **Transport-agnostic** — swap out the underlying HTTP transport without changing your code.
+
+## When to Use Solvix
+
+Solvix is ideal for:
+
+- Large-scale frontend applications with complex API needs
+- Backend services requiring resilience patterns
+- Multi-runtime projects (Node.js + browser + edge)
+- Enterprise systems with strict security requirements
+- Microservices architectures with observability needs
+
+## When Not to Use Solvix
+
+For extremely simple use cases (a single GET request to a public API), native `fetch` is perfectly fine. Solvix adds value when you need resilience, security, and observability at scale.

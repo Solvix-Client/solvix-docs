@@ -1,0 +1,174 @@
+---
+title: Priority Queue
+description: Control request execution order and concurrency. FIFO by default, priority-based when configured.
+---
+
+Solvix includes a built-in priority queue that controls **how many requests run concurrently** and **which requests run first**.
+
+> **Don't build your own concurrency limiter. Solvix handles queueing, priority, and backpressure natively.**
+
+## Basic Usage
+
+Limit concurrent requests:
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  maxConcurrency: 5, // Only 5 requests at a time
+});
+```
+
+## Queue Strategies
+
+```ts
+interface QueueOptions {
+  /** Maximum queue size. Default: Infinity */
+  maxQueueSize?: number;
+
+  /** Queue ordering strategy. Default: "fifo" */
+  strategy?: "fifo" | "priority";
+}
+```
+
+### FIFO (Default)
+
+First-in, first-out. Requests execute in the order they arrive.
+
+```ts
+const client = createClient({
+  maxConcurrency: 5,
+  queue: { strategy: "fifo" },
+});
+```
+
+### Priority
+
+Requests with lower priority numbers execute first.
+
+```ts
+const client = createClient({
+  maxConcurrency: 5,
+  queue: { strategy: "priority" },
+});
+
+// These execute FIRST (priority 1)
+client.get("/critical-data", { priority: 1 });
+
+// These execute SECOND (priority 5)
+client.get("/users", { priority: 5 });
+
+// These execute LAST (priority 10)
+client.get("/analytics", { priority: 10 });
+```
+
+Behind the scenes, priority uses a **binary heap** — O(log n) insert and pop, efficient even with 10,000+ queued requests.
+
+## Queue Size Limits
+
+Prevent unbounded queue growth:
+
+```ts
+const client = createClient({
+  maxConcurrency: 5,
+  queue: {
+    maxQueueSize: 100, // Reject requests when queue is full
+    strategy: "priority",
+  },
+});
+
+// When queue hits 100, new requests throw:
+// "Queue is full"
+```
+
+## Real-World Use Case: Background Task Queue
+
+```ts
+const client = createClient({
+  maxConcurrency: 3,
+  queue: { strategy: "priority" },
+});
+
+// Critical user-facing requests — high priority
+app.get("/api/data", async (req, res) => {
+  const result = await client.get("/backend/data", { priority: 1 });
+  res.json(result.data);
+});
+
+// Batch/cron jobs — low priority
+async function syncData() {
+  for (const item of items) {
+    await client.post("/backend/sync", item, { priority: 10 });
+  }
+}
+```
+
+## Concurrency + Rate Limiter
+
+`maxConcurrency` and `rateLimit` work together:
+
+```ts
+const client = createClient({
+  maxConcurrency: 10,
+  rateLimit: { capacity: 5, refillRate: 5, interval: 1000 },
+});
+
+// At most 10 requests run simultaneously
+// Of those, at most 5 per second are dispatched to the network
+// The rest wait in the priority queue
+```
+
+## Concurrency + Retry
+
+Retried requests re-enter the queue with their original priority:
+
+```ts
+const client = createClient({
+  maxConcurrency: 5,
+  retry: { retries: 2 },
+  queue: { strategy: "priority" },
+});
+
+// If a priority=1 request fails and needs retry,
+// it goes back to the front of the queue
+client.get("/critical", { priority: 1 });
+```
+
+## Error Handling
+
+When the queue is full:
+
+```ts
+try {
+  await client.get("/data");
+} catch (error) {
+  console.error(error.message);
+  // "Queue is full"
+}
+```
+
+## Performance
+
+The priority queue is implemented as a **binary heap**:
+
+| Operation | Solvix (binary heap) | Array-based |
+|-----------|---------------------|-------------|
+| Insert | O(log n) | O(n) |
+| Pop | O(log n) | O(n) |
+| Memory | O(n) | O(n) |
+
+For a queue of 10,000 items: **~14 comparisons per operation** vs **~5,000 for array-based**.
+
+## Best Practices
+
+1. **Set `maxConcurrency`** — prevents overwhelming both client and server
+2. **Use priority for mixed workloads** — user-facing requests should have lower priority numbers
+3. **Set `queue.maxQueueSize`** — prevents memory exhaustion in high-load scenarios
+4. **Monitor queue depth** — a growing queue means you need more concurrency or faster upstream
+5. **FIFO vs Priority** — FIFO is simpler; use priority when you have mixed-criticality workloads
+
+## What's Next
+
+- [Rate Limiting](/docs/core-api/rate-limiting) — token bucket throttling
+- [Request Grouping](/docs/core-api/request-grouping) — batch abort
+- [Dependency Chains](/docs/core-api/request-dependencies) — request ordering

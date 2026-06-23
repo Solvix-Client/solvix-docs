@@ -1,0 +1,42 @@
+---
+title: Transform Request
+description: Transform the request body and headers before sending. Useful for encryption, compression, or format conversion.
+---
+
+```ts
+const client = createClient({
+  transformRequest: async (body, headers) => {
+    // Encrypt the body before sending
+    const encrypted = await encrypt(body);
+    headers.set("X-Encrypted", "true");
+    return encrypted;
+  },
+});
+```
+
+## Parameters
+
+- `body` — The serialized request body (string, FormData, Blob, etc.)
+- `headers` — The `Headers` object. Mutate it directly — changes are preserved
+
+## Common Use Cases
+
+**Add API version to all request bodies:**
+```ts
+transformRequest: (body) => {
+  if (typeof body === 'string') {
+    const parsed = JSON.parse(body);
+    return JSON.stringify({ ...parsed, apiVersion: '2.0' });
+  }
+  return body;
+}
+```
+
+**Request signing:**
+```ts
+transformRequest: async (body, headers) => {
+  const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(body));
+  headers.set("X-Signature", Array.from(new Uint8Array(signature)).map(b => b.toString(16)).join(""));
+  return body;
+}
+```

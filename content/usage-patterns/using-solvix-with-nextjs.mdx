@@ -1,0 +1,36 @@
+---
+title: Using Solvix with Next.js
+description: Best practices for Solvix in Next.js App Router — server components, route handlers, and edge runtime.
+---
+
+```ts
+// app/api/client.ts — shared client for server-side
+import { createClient } from "@adityadev13/solvix";
+
+export const api = createClient({
+  baseURL: process.env.API_URL,
+  timeout: 5000,
+  retry: { retries: 2 },
+  logger: console,
+});
+```
+
+```ts
+// app/page.tsx — server component
+import { api } from "./api/client";
+
+export default async function Page() {
+  const res = await api.get("/data");
+  return <div>{JSON.stringify(res.data)}</div>;
+}
+```
+
+```ts
+// app/api/route.ts — route handler
+import { api } from "@/lib/api/client";
+
+export async function GET() {
+  const res = await api.get("/backend-data");
+  return Response.json(res.data);
+}
+```

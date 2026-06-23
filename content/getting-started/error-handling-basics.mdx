@@ -1,0 +1,184 @@
+---
+title: Error Handling
+description: How Solvix handles errors — HTTP errors, timeouts, network failures, circuit breaker rejects, and validation errors.
+---
+
+Solvix provides structured error handling. Every failed request throws an `Error` with context about what went wrong.
+
+## Error Types
+
+### HTTP Errors
+
+By default, any response with status outside 200–299 throws an error:
+
+```ts
+try {
+  await client.get("/nonexistent");
+} catch (error) {
+  console.error(error.message);
+  // "Request failed with status 404"
+}
+```
+
+Customize with `validateStatus`:
+
+```ts
+const client = createClient({
+  validateStatus: (status) => status < 500,
+});
+
+// 404 won't throw; 502 will
+await client.get("/missing"); // no error
+```
+
+### Timeout Errors
+
+When a request exceeds the configured timeout:
+
+```ts
+const client = createClient({ timeout: 1000 });
+
+try {
+  await client.get("/slow-endpoint");
+} catch (error) {
+  console.error(error.message);
+  // "The operation was aborted" (AbortError)
+}
+```
+
+### Network Errors
+
+DNS failures, connection refused, or fetch-level errors:
+
+```ts
+try {
+  await client.get("https://nonexistent-domain.xyz");
+} catch (error) {
+  console.error(error.message);
+  // "fetch failed" / "getaddrinfo ENOTFOUND"
+}
+```
+
+### Circuit Breaker Rejects
+
+When the circuit is open, requests fail immediately:
+
+```ts
+const client = createClient({
+  circuitBreaker: { failureThreshold: 3, resetTimeout: 10000 },
+});
+
+try {
+  await client.get("/failing-api");
+} catch (error) {
+  console.error(error.message);
+  // "Circuit breaker is open"
+}
+```
+
+### Validation Errors
+
+When `validateResponse` throws (e.g., Zod parse failure):
+
+```ts
+const client = createClient({
+  validateResponse: (data) => {
+    if (!data.id) throw new Error("Missing id field");
+    return data;
+  },
+});
+
+try {
+  await client.get("/malformed");
+} catch (error) {
+  console.error(error.message);
+  // "Missing id field"
+}
+```
+
+### Rate Limit Errors
+
+When rate limit capacity is exhausted:
+
+```ts
+try {
+  await client.get("/rate-limited");
+} catch (error) {
+  console.error(error.message);
+  // "Rate limit exceeded"
+}
+```
+
+## Error Context via Error Events
+
+Subscribe to `SolvixBus` for structured error data:
+
+```ts
+import { SolvixBus } from "@adityadev13/solvix";
+
+SolvixBus.on("request:error", (event) => {
+  const { context, timestamp } = event;
+  console.error({
+    url: context.url,
+    error: context.error,
+    attempt: context.meta.attemptNumber,
+    duration: context.meta.duration,
+    correlationId: context.meta.correlationId,
+  });
+});
+```
+
+## Error Handling with Hooks
+
+Handle errors globally with hooks:
+
+```ts
+const client = createClient({
+  hooks: {
+    onError: (error, ctx) => {
+      console.error(`[${ctx.meta.correlationId}] ${ctx.url}: ${error}`);
+      // Send to Sentry, Datadog, etc.
+    },
+  },
+});
+```
+
+## Retry and Error Interaction
+
+When retries are enabled, the error is only thrown after all retries are exhausted:
+
+```ts
+const client = createClient({
+  retry: { retries: 3 },
+});
+
+try {
+  await client.get("/flaky");
+} catch (error) {
+  // All 3 retries failed — this is the final error
+  console.log(`Failed after attempts`);
+}
+```
+
+Check `ctx.meta.retryCount` in error events to see how many retries were attempted.
+
+## Best Practices
+
+1. **Use `SolvixBus` for global error monitoring** — centralize error handling instead of try/catch on every request
+2. **Set `onError` hooks** for integrating with Sentry, Datadog, etc.
+3. **Combine with `fallbackURLs`** — specify backup endpoints that are tried when the primary fails
+4. **`validateStatus` for non-standard APIs** — some APIs return 200 with error bodies; handle them with `transformResponse`
+5. **Enable `devMode`** during development to get warnings about common misconfigurations
+
+```ts
+const client = createClient({
+  devMode: true, // warns about common mistakes
+  fallbackURLs: ["https://backup.example.com/api"],
+});
+```
+
+## What's Next
+
+- [Status Validation](/docs/core-api/validate-status) — customize which status codes are errors
+- [Fallback URLs](/docs/core-api/fallback-urls) — automatic failover to backup endpoints
+- [Logging & Events](/docs/core-api/logging-events-solvixbus) — global event bus for error monitoring

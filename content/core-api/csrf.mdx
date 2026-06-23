@@ -1,0 +1,53 @@
+---
+title: CSRF Protection
+description: Automatically read CSRF tokens from cookies and inject them into request headers for state-changing methods.
+---
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  baseURL: "https://app.example.com",
+  csrf: { enabled: true },
+});
+
+// POST/PUT/PATCH/DELETE requests automatically include X-XSRF-TOKEN header
+await client.post("/data", { key: "value" });
+// → Header: X-XSRF-TOKEN: <value from XSRF-TOKEN cookie>
+```
+
+## How It Works
+
+1. Browser receives a `XSRF-TOKEN` cookie from the server
+2. Solvix reads the cookie on every state-changing request (POST/PUT/PATCH/DELETE)
+3. Injects the token as `X-XSRF-TOKEN` header
+4. Server validates the header matches the cookie
+
+GET, HEAD, and OPTIONS requests are not modified (they're safe methods).
+
+## Configuration
+
+```ts
+interface CSRFOptions {
+  enabled?: boolean;
+  cookieName?: string;    // Cookie to read. Default: "XSRF-TOKEN"
+  headerName?: string;    // Header to set. Default: "X-XSRF-TOKEN"
+  readCookie?: (name: string) => string | undefined;  // Custom cookie reader
+}
+```
+
+## Custom Cookie Reader
+
+For non-browser environments:
+
+```ts
+const client = createClient({
+  csrf: {
+    enabled: true,
+    readCookie: (name) => {
+      // Read from your custom cookie store
+      return myCookieJar.get(name);
+    },
+  },
+});
+```

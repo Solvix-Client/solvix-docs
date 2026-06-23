@@ -1,0 +1,165 @@
+---
+title: Quick Start
+description: Build your first Solvix client in 2 minutes. Create a client, send requests, handle responses, and enable retries.
+---
+
+This guide walks through creating a Solvix client, sending requests, handling responses and errors, and enabling resilience features.
+
+## Step 1: Install
+
+```bash
+npm install @adityadev13/solvix
+```
+
+## Step 2: Create a Client
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  baseURL: "https://jsonplaceholder.typicode.com",
+  timeout: 10000,
+});
+```
+
+The client is your reusable HTTP orchestrator. All requests inherit these options.
+
+## Step 3: Send a GET Request
+
+```ts
+const response = await client.get("/posts/1");
+
+console.log(response.data);
+// { userId: 1, id: 1, title: "...", body: "..." }
+
+console.log(response.status);
+// 200
+
+console.log(response.headers);
+// Headers { ... }
+```
+
+The response is automatically parsed as JSON. The `data` field contains the parsed body.
+
+## Step 4: Send a POST Request
+
+```ts
+const response = await client.post("/posts", {
+  title: "My Post",
+  body: "Hello Solvix!",
+  userId: 1,
+});
+
+console.log(response.data);
+// { id: 101, title: "My Post", body: "Hello Solvix!", userId: 1 }
+```
+
+The request body is serialized to JSON by default and the `Content-Type: application/json` header is set automatically.
+
+## Step 5: Handle Errors
+
+```ts
+try {
+  const res = await client.get("/nonexistent");
+} catch (error) {
+  if (error instanceof Error) {
+    console.error(error.message);
+    // "Request failed with status 404"
+  }
+}
+```
+
+Solvix throws on non-2xx status by default. You can customize this with `validateStatus`.
+
+## Step 6: Add Resilience
+
+Enable retries with a single option:
+
+```ts
+const client = createClient({
+  baseURL: "https://jsonplaceholder.typicode.com",
+  retry: {
+    retries: 3,
+    factor: 2,
+    minTimeout: 300,
+    maxTimeout: 5000,
+  },
+});
+```
+
+Now if a request fails, Solvix retries automatically with exponential backoff.
+
+## Step 7: Add Observability
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  baseURL: "https://jsonplaceholder.typicode.com",
+  timeline: { enabled: true },
+  profiling: { enabled: true },
+  logger: console,
+});
+
+const res = await client.get("/posts/1");
+
+console.log(res.meta.timeline);
+// [{ stage: "created", timestamp: 1234 }, ...]
+
+console.log(res.meta.profile);
+// { totalMs: 102, networkMs: 95, ... }
+```
+
+Every response now carries timing and performance data automatically.
+
+## Step 8: Subscribe to Global Events
+
+```ts
+import { SolvixBus } from "@adityadev13/solvix";
+
+SolvixBus.on("request:complete", (event) => {
+  console.log(`[${event.context.meta.correlationId}] ${event.context.url}`);
+});
+```
+
+The event bus fires on every request lifecycle stage — start, retry, complete, error.
+
+## Complete Example
+
+```ts
+import { createClient, SolvixBus } from "@adityadev13/solvix";
+
+// Subscribe to events
+SolvixBus.on("request:complete", (e) => {
+  console.log(`✓ ${e.context.url} → ${e.context.response?.status}`);
+});
+
+SolvixBus.on("request:error", (e) => {
+  console.error(`✗ ${e.context.url} → ${e.context.error}`);
+});
+
+// Create client with resilience features
+const client = createClient({
+  baseURL: "https://jsonplaceholder.typicode.com",
+  timeout: 5000,
+  retry: { retries: 2 },
+  timeline: { enabled: true },
+  logger: console,
+});
+
+// Make requests
+const [posts, user] = await Promise.all([
+  client.get("/posts?_limit=3"),
+  client.get("/users/1"),
+]);
+
+console.log(posts.data);  // typed array
+console.log(user.data);   // typed object
+```
+
+## What's Next
+
+- [Configuration Overview](/docs/getting-started/configuration-overview) — explore all 46+ options
+- [Retry Engine](/docs/core-api/retry-engine) — configure advanced retry strategies
+- [Circuit Breaker](/docs/core-api/circuit-breaker) — protect against cascading failures
+- [Request Deduplication](/docs/core-api/request-deduplication) — eliminate redundant network calls

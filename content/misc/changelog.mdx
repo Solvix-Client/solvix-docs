@@ -1,0 +1,108 @@
+---
+title: Changelog
+description: Release history for Solvix — from beta.1 through v1.0.0 stable.
+---
+
+## v1.0.0 (2026-06-23) — Stable Release
+
+### What's New Since Beta
+
+Solvix 1.0.0 adds **16 new features** and **6 performance optimizations** on top of the beta foundation, bringing the total to **~50 built-in features**.
+
+#### Security (3 new)
+
+- **CSRF Protection** — reads `XSRF-TOKEN` cookie, injects `X-XSRF-TOKEN` header on state-changing methods (POST/PUT/PATCH/DELETE). Customizable cookie name and header name.
+- **TLS/SSL Configuration** — `rejectUnauthorized`, custom CA, client cert/key for mTLS. Uses `undici` Agent (Node.js, optional dependency).
+- **HTTP/HTTPS Proxy** — `proxy: { host, port, auth }` for corporate networks. Uses `undici ProxyAgent`.
+
+#### Resilience (3 new)
+
+- **Health Checks** — `client.healthCheck` with interval-based endpoint pinging, `onStatusChange` callback, `health:change` events.
+- **Cookie Management** — in-memory `CookieJar` for Node.js/edge. Parses `Set-Cookie`, attaches `Cookie` on subsequent requests.
+- **User-Extensible Middleware** — `client.use(middleware)` for injecting custom Koa-style middleware into the request pipeline.
+
+#### Observability (4 new)
+
+- **Correlation IDs** — auto `X-Request-ID` header on every request, stored in `ctx.meta`, included in all log metadata.
+- **Aggregated Metrics** — `client.metrics()` returns total/active/success/failure/retry counters + duration histogram (configurable buckets).
+- **Distributed Tracing** — W3C `traceparent` header injection (format `00-{traceId}-{spanId}-01`), same traceId across retries, new spanId per attempt.
+- **Public Event Bus** — `SolvixBus` exported for external subscriptions to `request:start`, `:complete`, `:error`, `:retry`, `health:change`, shadow events.
+
+#### Data Handling (2 new)
+
+- **Progress Events** — `onUploadProgress` and `onDownloadProgress` hooks via ReadableStream counting. Works with Blob, string, ArrayBuffer bodies.
+- **Response Schema Validation** — `validateResponse` callback (compatible with Zod, Valibot, or custom functions). Zero external dependencies.
+
+#### Caching & Routing (2 new)
+
+- **Graceful Fallback URLs** — `fallbackURLs[]` tried automatically when primary URL fails with retryable errors.
+- **Custom paramsSerializer** — full control over query parameter serialization format (bracket notation, indexed, etc.).
+
+#### Performance Optimizations (6)
+
+| Optimization | Impact |
+|---|---|
+| SHA-256 skipped unless dedupe/cache enabled | Eliminates Web Crypto hash for ~90% of requests |
+| Binary heap priority queue | O(log n) insert/pop instead of O(n) splice |
+| Consolidated Headers (3 calls → 1) | Single Headers object shared across tracing, CSRF, cookie jar |
+| In-place header mutation | Avoids object spread on every header change |
+| FIFO eviction at 10k entries | No memory leaks at scale |
+| Dependency registry cleanup | Fixed memory leak |
+
+#### Bundle Size (v1.0.0)
+
+| Format | Size |
+|--------|------|
+| ESM | 33.03 KB |
+| CJS | 33.94 KB |
+| DTS | 23.42 KB |
+
+## v1.0.0-beta.2 — Documentation Updates
+
+- Updated shields and tags in README file
+
+## v1.0.0-beta.1 — Initial Beta Release
+
+### Core Features
+
+- Advanced retry engine with exponential backoff
+- Circuit breaker for failure protection
+- Token bucket rate limiter
+- Request deduplication (stampede-safe)
+- Token refresh orchestrator (stampede-safe)
+- Request dependency chains
+- Priority queue with concurrency control
+- Request grouping with batch abort
+- Snapshot debugging mode
+- Request timeline tracking (15 stages)
+- Performance profiling with timing breakdown
+- ETag conditional requests
+- Offline queue support (browser)
+- Shadow mode execution (dual API testing)
+- Custom transport support
+- Middleware system (request/response transform)
+- Lifecycle hooks (beforeRequest, afterResponse, onError)
+- Timeout handling with AbortController
+- Streaming support (SSE, JSON Lines)
+
+### Security
+
+- CRLF injection protection (always on)
+- Header sanitization (forbidden headers stripped)
+- Body size guard
+- Response size guard
+- HTTPS enforcement
+- Domain allowlisting
+- Snapshot redaction (passwords masked)
+
+### Runtime Support
+
+- Node.js 18+
+- Modern browsers (Chrome, Firefox, Safari, Edge)
+- Deno, Bun
+- Edge runtimes
+
+### Bundle (beta.1)
+
+- index.js: 23 KB
+- gzip: 7.8 KB

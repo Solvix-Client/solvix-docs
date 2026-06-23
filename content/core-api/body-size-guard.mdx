@@ -1,0 +1,17 @@
+---
+title: Body Size Guard
+description: Reject requests with bodies larger than a configured limit. Prevents accidental large uploads.
+---
+
+```ts
+const client = createClient({
+  security: {
+    maxBodySize: 1_000_000, // 1 MB
+  },
+});
+
+// Throws if body exceeds 1MB
+await client.post("/upload", hugeFile);
+```
+
+The guard runs before serialization — it checks the raw body size. File uploads, large JSON payloads, and form data are all checked.

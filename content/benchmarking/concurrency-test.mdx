@@ -1,0 +1,21 @@
+---
+title: Concurrency Test
+description: Throughput under parallel load — 100 and 500 concurrent requests.
+---
+
+## Results
+
+| Scenario | Ops/sec | Avg Latency |
+|----------|---------|-------------|
+| 100 parallel requests | 2,012 | ~0.50 ms |
+| 500 parallel requests | 392 | ~2.55 ms |
+
+## Analysis
+
+- 100 parallel requests complete at ~2K ops/sec with sub-millisecond average latency
+- 500 parallel requests show expected queue contention but no crashes or stalled promises
+- No errors, no memory pressure, no event loop blocking
+
+## Conclusion
+
+Solvix handles burst concurrency safely with predictable performance degradation under load.

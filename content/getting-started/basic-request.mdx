@@ -1,0 +1,143 @@
+---
+title: Basic Request
+description: Learn how to send HTTP requests with all supported methods and options in Solvix.
+---
+
+Solvix supports all standard HTTP methods. Each method returns a `SolvixResponse<T>` with typed data, status, headers, and metadata.
+
+## Supported Methods
+
+| Method | Client Method | Description |
+|--------|---------------|-------------|
+| GET | `client.get(url, options?)` | Retrieve data |
+| POST | `client.post(url, body?, options?)` | Create a resource |
+| PUT | `client.put(url, body?, options?)` | Replace a resource |
+| PATCH | `client.patch(url, body?, options?)` | Partial update |
+| DELETE | `client.delete(url, options?)` | Delete a resource |
+| HEAD | `client.head(url, options?)` | Get headers only |
+| OPTIONS | `client.options(url, options?)` | Get allowed methods |
+
+## GET Requests
+
+The most common operation — fetching data.
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  baseURL: "https://api.example.com",
+});
+
+// Simple GET
+const users = await client.get("/users");
+console.log(users.data); // Typed array of users
+
+// GET with query params
+const filtered = await client.get("/users", {
+  params: { role: "admin", status: "active" },
+});
+
+// GET with per-request timeout
+const fast = await client.get("/health", { timeout: 2000 });
+```
+
+## POST Requests
+
+Creating resources with a request body.
+
+```ts
+// POST with JSON body (default)
+const newUser = await client.post("/users", {
+  name: "Alice",
+  email: "alice@example.com",
+});
+
+// POST with form data
+const formData = new FormData();
+formData.append("file", fileInput.files[0]);
+
+const upload = await client.post("/upload", formData, {
+  bodyType: "multipart",
+});
+
+// POST with string body
+const text = await client.post("/echo", "raw string", {
+  bodyType: "text",
+});
+```
+
+## PUT and PATCH Requests
+
+Full replacement vs. partial update.
+
+```ts
+// PUT — replaces the entire resource
+await client.put("/users/1", {
+  name: "Alice",
+  email: "alice@newdomain.com",
+  role: "admin",
+});
+
+// PATCH — only updates specified fields
+await client.patch("/users/1", {
+  email: "alice@newdomain.com",
+});
+```
+
+## DELETE Requests
+
+```ts
+await client.delete("/users/1");
+
+// DELETE with body (some APIs accept it)
+await client.delete("/users/1", {
+  body: { reason: "inactive" },
+});
+```
+
+## HEAD and OPTIONS
+
+```ts
+// HEAD — get response headers without body
+const info = await client.head("/users");
+console.log(info.headers.get("x-total-count"));
+
+// OPTIONS — discover allowed methods
+const opts = await client.options("/users");
+console.log(opts.headers.get("allow"));
+```
+
+## Per-Request Options
+
+Every method accepts an optional options object that overrides global configuration:
+
+```ts
+const res = await client.get("/slow-endpoint", {
+  timeout: 15000,
+  retry: { retries: 5 },
+  priority: 1, // high priority
+  params: { page: 1 },
+  headers: {
+    Authorization: "Bearer custom-token",
+  },
+});
+```
+
+Per-request options merge with global options. Method-specific options (`body`, `bodyType`) are only relevant for methods that accept a body.
+
+## Using the Generic `request` Method
+
+If you need full control, use `client.request<T>()` directly:
+
+```ts
+const res = await client.request<{ id: number }>("/custom-path", {
+  method: "POST",
+  body: { data: "value" },
+});
+```
+
+## What's Next
+
+- [Response Object Structure](/docs/getting-started/response-structure) — understand the full response shape
+- [Error Handling](/docs/getting-started/error-handling-basics) — handle failures gracefully
+- [Request Options Reference](/docs/core-api/request-options-reference) — every option explained

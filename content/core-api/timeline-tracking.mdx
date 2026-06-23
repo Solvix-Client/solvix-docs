@@ -1,0 +1,50 @@
+---
+title: Timeline Tracking
+description: 15-stage request timeline with microsecond precision. Track exactly where time is spent in the request lifecycle.
+---
+
+```ts
+const client = createClient({
+  timeline: { enabled: true },
+});
+
+const res = await client.get("/users");
+console.log(res.meta.timeline);
+// [
+//   { stage: "created", timestamp: 1700000000123 },
+//   { stage: "queued", timestamp: 1700000000124 },
+//   { stage: "transportStart", timestamp: 1700000000150 },
+//   { stage: "responseReceived", timestamp: 1700000000350 },
+//   { stage: "completed", timestamp: 1700000000352 },
+// ]
+```
+
+## All 15 Stages
+
+| Stage | When |
+|-------|------|
+| `created` | Request context created |
+| `queued` | Entered priority queue |
+| `dequeued` | Left priority queue |
+| `breakerCheck` | Circuit breaker checked |
+| `rateLimitWait` | Waiting for rate limit token |
+| `retryAttempt` | Retry attempt started |
+| `retryDelay` | Waiting between retries |
+| `transportStart` | fetch() called |
+| `responseReceived` | First byte received |
+| `parseStart` | Response parsing began |
+| `parseEnd` | Response parsing completed |
+| `validateStart` | validateResponse called |
+| `validateEnd` | validateResponse completed |
+| `cacheWrite` | Response stored in cache |
+| `completed` | Full pipeline resolved |
+
+## Use Cases
+
+**Identify bottlenecks:**
+```ts
+const { timeline } = (await client.get("/data")).meta;
+const networkTime = timeline.find(t => t.stage === "transportStart")?.timestamp ?? 0;
+const firstByte = timeline.find(t => t.stage === "responseReceived")?.timestamp ?? 0;
+console.log(`Network latency: ${firstByte - networkTime}ms`);
+```

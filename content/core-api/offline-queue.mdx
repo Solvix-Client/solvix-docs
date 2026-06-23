@@ -1,0 +1,124 @@
+---
+title: Offline Queue
+description: Queue requests when offline and replay them when connectivity returns. Browser-focused with optional persistence.
+---
+
+The Offline Queue saves outgoing requests when the browser is offline and automatically replays them when connectivity is restored.
+
+> **Your app shouldn't crash when the network drops. Queue it, replay it, move on.**
+
+## Basic Usage
+
+```ts
+import { createClient } from "@adityadev13/solvix";
+
+const client = createClient({
+  offline: {
+    enabled: true,
+    maxQueueSize: 50,
+  },
+});
+```
+
+When the browser goes offline, requests are queued instead of failing:
+
+```ts
+// Works normally when online
+await client.get("/data");
+
+// When offline: queued, will replay when online
+await client.post("/analytics", { event: "page_view" });
+```
+
+## Configuration
+
+```ts
+interface OfflineOptions {
+  /** Enable offline queueing. Default: false */
+  enabled?: boolean;
+
+  /** Maximum number of queued requests. Default: Infinity */
+  maxQueueSize?: number;
+
+  /** Persist queue across page reloads (localStorage). Default: false */
+  persist?: boolean;
+}
+```
+
+## Persistence
+
+With `persist: true`, the queue survives page reloads:
+
+```ts
+const client = createClient({
+  offline: {
+    enabled: true,
+    persist: true, // Saved to localStorage
+  },
+});
+```
+
+This means queued requests that weren't sent before the user closed the tab will be replayed when they return.
+
+## How It Works
+
+1. Browser detects connectivity change (`navigator.onLine`)
+2. When offline: `fetch` fails → request is serialized and queued
+3. When online: queue is flushed — requests are replayed in FIFO order
+4. Failed replays are retried (if `retry` is configured) or dropped
+
+## Real-World Use Case: Analytics Tracking
+
+```ts
+const client = createClient({
+  baseURL: "https://analytics.example.com",
+  offline: {
+    enabled: true,
+    maxQueueSize: 200,
+    persist: true,
+  },
+});
+
+// Track user actions — works offline too
+document.addEventListener("click", (event) => {
+  client.post("/track", {
+    event: "click",
+    x: event.clientX,
+    y: event.clientY,
+    url: window.location.href,
+  });
+});
+```
+
+## Offline Queue + Retry
+
+When replayed, queued requests use the client's retry configuration:
+
+```ts
+const client = createClient({
+  offline: { enabled: true },
+  retry: { retries: 2 }, // Retry replay failures twice
+});
+```
+
+## Browser Support
+
+| Feature | Chrome | Firefox | Safari | Edge |
+|---------|--------|---------|--------|------|
+| Offline detection | ✅ | ✅ | ✅ | ✅ |
+| Request queueing | ✅ | ✅ | ✅ | ✅ |
+| Persistence (localStorage) | ✅ | ✅ | ✅ | ✅ |
+
+## Best Practices
+
+1. **Enable `persist` for analytics** — don't lose user activity data
+2. **Set `maxQueueSize`** — prevents unbounded memory growth during extended offline periods
+3. **Combine with retry** — replays may fail if the server was also temporarily down
+4. **Use for non-critical requests** — mutations queued offline may be stale by the time they're replayed
+5. **Test offline behavior** — use DevTools > Network > Offline to simulate
+
+## What's Next
+
+- [Retry Engine](/docs/core-api/retry-engine) — configure replay retries
+- [ETag Support](/docs/core-api/etag-support) — reduce bandwidth when back online
+- [Dependency Chains](/docs/core-api/request-dependencies) — ordered request execution
