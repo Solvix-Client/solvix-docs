@@ -4,6 +4,7 @@ export const SITE = {
   url: 'https://solvix-client.github.io/solvix-docs',
   github: 'https://github.com/Solvix-Client/solvix',
   npm: 'https://www.npmjs.com/package/@adityadev13/solvix',
+  sponsor: 'https://buymeacoffee.com/solvix',
   version: '1.0.0',
 } as const;
 

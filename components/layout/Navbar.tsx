@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Menu, X, Github, Book, ExternalLink } from 'lucide-react';
+import { Menu, X, Github, Book, ExternalLink, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ThemeToggle from './ThemeToggle';
 import { NAV_ITEMS, SITE } from '@/lib/constants';
@@ -32,6 +32,10 @@ export default function Navbar() {
                 {item.label === 'Docs' && <Book size={16} />}{item.label}
               </Link>
             ))}
+            <a href={SITE.sponsor} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-[#1FD1B2] to-[#0FA38A] hover:from-[#0FA38A] hover:to-[#0D8F77] shadow-sm hover:shadow-md transition-all">
+              <Heart size={14} /> Sponsor
+            </a>
             <ThemeToggle />
           </div>
           <div className="md:hidden flex items-center gap-3">
@@ -62,6 +66,10 @@ export default function Navbar() {
                     <Book size={16} />{item.label}
                   </Link>
                 ))}
+                <a href={SITE.sponsor} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-[#1FD1B2] to-[#0FA38A]">
+                  <Heart size={16} /> Sponsor <ExternalLink size={12} className="ml-auto" />
+                </a>
               </div>
             </motion.div>
           </>

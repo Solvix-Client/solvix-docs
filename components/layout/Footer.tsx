@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Github, ExternalLink, BookOpen } from 'lucide-react';
+import { Github, ExternalLink, BookOpen, Heart } from 'lucide-react';
 import { SITE } from '@/lib/constants';
 
 export default function Footer() {
@@ -16,6 +16,10 @@ export default function Footer() {
             className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
             <BookOpen size={14} /> Documentation
           </Link>
+          <a href={SITE.sponsor} target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-[#0FA38A] dark:hover:text-[#1FD1B2] transition-colors">
+            <Heart size={14} /> Sponsor
+          </a>
         </div>
       </div>
     </footer>

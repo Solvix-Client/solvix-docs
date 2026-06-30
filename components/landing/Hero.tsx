@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Github, ExternalLink } from 'lucide-react';
+import { ArrowRight, Github, ExternalLink, Heart } from 'lucide-react';
 import { SITE } from '@/lib/constants';
 
 export default function Hero() {
@@ -54,6 +54,10 @@ export default function Hero() {
           <a href={SITE.github} target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 transition-all">
             <Github size={18} /> GitHub
+          </a>
+          <a href={SITE.sponsor} target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-white bg-gradient-to-r from-[#1FD1B2] to-[#0FA38A] hover:from-[#0FA38A] hover:to-[#0D8F77] shadow-lg hover:shadow-xl transition-all">
+            <Heart size={18} /> Sponsor
           </a>
           <span className="text-sm text-gray-400 dark:text-gray-500 hidden sm:inline">·</span>
           <span className="text-sm text-gray-400 dark:text-gray-500 hidden sm:inline">
