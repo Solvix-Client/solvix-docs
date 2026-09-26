@@ -5,10 +5,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 const PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn', 'bun'] as const;
 const COMMANDS: Record<string, string> = {
-  npm: 'npm install @adityadev13/solvix',
-  pnpm: 'pnpm add @adityadev13/solvix',
-  yarn: 'yarn add @adityadev13/solvix',
-  bun: 'bun add @adityadev13/solvix',
+  npm: 'npm install @solvix-client/client',
+  pnpm: 'pnpm add @solvix-client/client',
+  yarn: 'yarn add @solvix-client/client',
+  bun: 'bun add @solvix-client/client',
 };
 
 export default function InstallSection() {

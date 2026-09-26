@@ -427,7 +427,7 @@ const client = createClient({
 > `RequestGroup` — Attach to a group for batch abort.
 
 ```ts
-import { RequestGroup } from "@adityadev13/solvix";
+import { RequestGroup } from "@solvix-client/client";
 const group = RequestGroup.create("search");
 client.get("/search", { group });
 group.abort(); // Cancel all requests in group

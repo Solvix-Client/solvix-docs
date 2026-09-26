@@ -1,6 +1,66 @@
 ---
 title: Changelog
-description: Release history for Solvix — from beta.1 through v1.0.0 stable.
+description: Release history for Solvix — from beta.1 through v1.1.0.
+---
+
+## v1.1.0 (2026-06-29) — GraphQL, Load Balancing & Binary Serialization
+
+### Package Rename
+
+- **`@solvix-client/client`** renamed to **`@solvix-client/client`**
+- All imports, docs, and examples updated
+
+### New Features (3 major)
+
+#### GraphQL Client (`createGraphQLClient`)
+
+- **Query & Mutation** — `graphql.query()` and `graphql.mutate()` with full type inference
+- **Request Batching** — collect multiple operations into a single HTTP request
+- **Automatic Persisted Queries (APQ)** — SHA-256 hash-based query deduplication
+- **Entity-level Cache Normalization** — `__typename:id` key extraction with TTL-based auto-eviction
+- **Subscription Transport Adapters** — HTTP/SSE (`createHTTPTransport`) and WebSocket (`createWSTransport`) with `graphql-ws` protocol, heartbeat, reconnect
+- **GraphQL Error Handling** — `GraphQLClientError` with structured `graphqlErrors` array
+
+#### Client-side Load Balancing (`createLoadBalancer`)
+
+- **Drop-in transport** — `createLoadBalancer()` returns a `SolvixTransport`
+- **Built-in strategies** — `round-robin`, `random`, `weighted`, `health`
+- **Custom strategy functions** — `(backends: BackendState[]) => BackendState` with latency tracking
+- **Per-backend health checking** — configurable endpoint, interval, timeout, failure threshold
+- **Transparent failover** — automatically routes to healthy backends
+
+#### Binary Serialization (Protobuf / MessagePack)
+
+- **Extended `BodyType`** — `"protobuf"` and `"msgpack"` added
+- **Extended `ResponseType`** — `"protobuf"` and `"msgpack"` added
+- **`SerializationOptions`** — user-provided `encoder`/`decoder` functions, zero bundled dependencies
+- **Codec helpers** — `createProtobufCodec()` and `createMsgpackCodec()`
+
+### New Exports
+
+| Export | Description |
+|--------|-------------|
+| `createGraphQLClient` | Create a GraphQL client wrapping an existing Solvix client |
+| `createHTTPTransport` | HTTP/SSE transport adapter for GraphQL subscriptions |
+| `createWSTransport` | WebSocket transport adapter for GraphQL subscriptions |
+| `createLoadBalancer` | Create a load-balancing transport |
+| `createProtobufCodec` | Helper to create a protobuf serialization codec |
+| `createMsgpackCodec` | Helper to create a MessagePack serialization codec |
+
+### Bundle Size (v1.1.0)
+
+| Format | Size |
+|--------|------|
+| ESM | 43.91 KB |
+| CJS | 44.85 KB |
+| DTS | 34.25 KB |
+
+### Tests
+
+- 37 new tests across 3 files
+- Total: **208 tests** across 32 test files
+- Zero breaking changes
+
 ---
 
 ## v1.0.0 (2026-06-23) — Stable Release

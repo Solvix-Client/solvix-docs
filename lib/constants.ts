@@ -3,9 +3,9 @@ export const SITE = {
   description: 'Enterprise-Grade HTTP Orchestration Engine for Modern JavaScript',
   url: 'https://solvix-client.github.io/solvix-docs',
   github: 'https://github.com/Solvix-Client/solvix',
-  npm: 'https://www.npmjs.com/package/@adityadev13/solvix',
+  npm: 'https://www.npmjs.com/package/@solvix-client/client',
   sponsor: 'https://buymeacoffee.com/solvix',
-  version: '1.0.0',
+  version: '1.1.0',
 } as const;
 
 export const NAV_ITEMS = [

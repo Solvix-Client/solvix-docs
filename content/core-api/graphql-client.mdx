@@ -1,0 +1,233 @@
+---
+title: GraphQL Client
+description: First-class GraphQL client with query, mutation, batch, APQ, cache normalization, and subscription support via pluggable transport adapters.
+---
+
+Solvix includes a built-in GraphQL client that composes on top of the existing Solvix HTTP client. All HTTP concerns — retry, circuit breaker, rate limiting, metrics, tracing, auth, correlation — are inherited automatically.
+
+## Basic Usage
+
+```ts
+import { createClient, createGraphQLClient } from "@solvix-client/client";
+
+const client = createClient({ baseURL: "https://api.example.com" });
+const graphql = createGraphQLClient(client, {
+  endpoint: "/graphql",
+});
+
+// Query
+const { data } = await graphql.query(`{ users { id name email } }`);
+
+// Mutation
+const { data: created } = await graphql.mutate(
+  `mutation CreateUser($input: UserInput!) {
+    createUser(input: $input) { id name }
+  }`,
+  { variables: { input: { name: "Alice" } } }
+);
+```
+
+## Options
+
+```ts
+const graphql = createGraphQLClient(client, {
+  endpoint: "/graphql",                    // Default: "/graphql"
+  defaultMethod: "POST",                   // Default HTTP method for queries
+  throwOnError: true,                      // Throw GraphQLClientError on errors
+  headers: { "X-Custom": "value" },        // Default headers for all operations
+  persistedQueries: { enabled: true },     // APQ support
+  batching: { enabled: true },             // Request batching
+  cacheNormalization: { enabled: true },   // Entity-level caching
+});
+```
+
+## Request Batching
+
+Batch multiple GraphQL operations into a single HTTP request. Operations are collected and sent together after a configurable interval or when the batch is full.
+
+```ts
+const graphql = createGraphQLClient(client, {
+  endpoint: "/graphql",
+  batching: {
+    enabled: true,
+    maxBatchSize: 10,     // Max operations per batch (default: 10)
+    batchInterval: 10,    // Wait time in ms before sending (default: 10)
+  },
+});
+
+// These 4 calls are automatically batched into 1 HTTP request
+const [users, orders, products, analytics] = await Promise.all([
+  graphql.query("{ users { id name } }"),
+  graphql.query("{ orders { id total } }"),
+  graphql.query("{ products { id name price } }"),
+  graphql.query("{ analytics { revenue } }"),
+]);
+```
+
+## Automatic Persisted Queries (APQ)
+
+APQ reduces bandwidth by sending a SHA-256 hash of the query instead of the full query string. The server caches the hash-to-query mapping.
+
+```ts
+const graphql = createGraphQLClient(client, {
+  endpoint: "/graphql",
+  persistedQueries: { enabled: true },
+  defaultMethod: "GET",  // APQ works best with GET (CDN caching)
+});
+
+// First request: sends hash only, server responds with PERSISTED_QUERY_NOT_FOUND
+// Second request: sends hash + full query, server caches it
+// All subsequent requests: sends hash only (smaller payload)
+const { data } = await graphql.query(`{ users { id name } }`);
+```
+
+## Entity-level Cache Normalization
+
+The normalized cache extracts entities from GraphQL responses using `__typename` and `id` fields, stores them with TTL, and can reconstruct responses from cached entities.
+
+```ts
+const graphql = createGraphQLClient(client, {
+  cacheNormalization: {
+    enabled: true,
+    keyFields: ["__typename", "id"],  // Default entity key fields
+    ttl: 300000,                       // 5 minutes (default)
+  },
+});
+
+// Custom key function for non-standard IDs
+const graphql = createGraphQLClient(client, {
+  cacheNormalization: {
+    enabled: true,
+    keyFn: (entity) => {
+      if (entity.__typename && entity.slug) {
+        return `${entity.__typename}:${entity.slug}`;
+      }
+      return null;
+    },
+  },
+});
+
+// Manual cache management
+graphql.evict((key) => key.startsWith("User:"));  // Invalidate specific entities
+graphql.clearCache();                               // Clear all cached entities
+```
+
+## Subscriptions
+
+GraphQL subscriptions use pluggable transport adapters. Two built-in adapters are provided: HTTP/SSE and WebSocket.
+
+### HTTP/SSE Transport
+
+```ts
+import { createHTTPTransport } from "@solvix-client/client";
+
+const transport = createHTTPTransport({
+  headers: { Authorization: "Bearer token" },
+});
+
+for await (const event of graphql.subscribe(`
+  subscription OnNotification {
+    notificationReceived { id type body }
+  }
+`, { transport })) {
+  console.log(event.data.notificationReceived);
+}
+
+transport.close();
+```
+
+### WebSocket Transport
+
+Uses the `graphql-ws` protocol (Apollo-compatible) with automatic reconnection and heartbeat support.
+
+```ts
+import { createWSTransport } from "@solvix-client/client";
+
+const transport = createWSTransport({
+  url: "wss://api.example.com/graphql",
+  connectionParams: { authToken: "Bearer token" },
+  reconnect: true,
+  reconnectInterval: 3000,
+  maxReconnectAttempts: 5,
+});
+
+for await (const event of graphql.subscribe(`
+  subscription OnMessage($chatId: ID!) {
+    messageAdded(chatId: $chatId) { id text sender { name } }
+  }
+`, { variables: { chatId: "room-1" }, transport })) {
+  renderMessage(event.data.messageAdded);
+}
+
+transport.close();
+```
+
+## Error Handling
+
+By default, a 200 response with `{ errors: [...] }` does **not** throw. Errors are available on `response.errors`.
+
+```ts
+const { data, errors } = await graphql.query("{ users { id } }");
+if (errors) {
+  console.error(errors[0].message);
+}
+```
+
+Enable `throwOnError` to throw a `GraphQLClientError`:
+
+```ts
+import { createGraphQLClient } from "@solvix-client/client";
+
+const graphql = createGraphQLClient(client, { throwOnError: true });
+
+try {
+  await graphql.query("{ secret }");
+} catch (err) {
+  if (err.name === "GraphQLClientError") {
+    console.error(err.graphqlErrors);  // Array of GraphQLError objects
+  }
+}
+```
+
+## Integration with Existing Features
+
+The GraphQL client delegates all HTTP concerns to the underlying Solvix client:
+
+```ts
+const client = createClient({
+  baseURL: "https://api.example.com",
+  retry: { retries: 3 },
+  circuitBreaker: { failureThreshold: 5, failureRate: 0.5, rollingWindow: 30000, minimumRequests: 10, resetTimeout: 10000 },
+  metrics: { enabled: true },
+  correlation: { enabled: true },
+  auth: {
+    refreshToken: async () => getToken(),
+    shouldRefresh: (err) => err.status === 401,
+  },
+});
+
+const graphql = createGraphQLClient(client, { endpoint: "/graphql" });
+
+// All GraphQL operations automatically get retry, circuit breaker,
+// metrics, correlation IDs, and token refresh
+const { data } = await graphql.query("{ users { id } }");
+```
+
+## Types
+
+```ts
+interface GraphQLClient {
+  query<T>(document: string, options?: GraphQLOperationOptions): Promise<GraphQLResponse<T>>;
+  mutate<T>(document: string, options?: GraphQLOperationOptions): Promise<GraphQLResponse<T>>;
+  batch(operations: Array<{ document: string; options?: GraphQLOperationOptions }>): Promise<GraphQLResponse[]>;
+  subscribe<T>(document: string, options: GraphQLOperationOptions & { transport: GraphQLSubscriptionTransport }): AsyncIterable<GraphQLResponse<T>>;
+  evict(predicate: (key: string) => boolean): void;
+  clearCache(): void;
+}
+
+interface GraphQLResponse<T> {
+  data?: T;
+  errors?: GraphQLError[];
+  extensions?: Record<string, any>;
+}
+```

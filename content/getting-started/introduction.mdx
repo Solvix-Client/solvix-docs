@@ -1,11 +1,11 @@
 ---
 title: Introduction
-description: Solvix is a TypeScript-first HTTP orchestration engine with 50+ built-in features for production systems.
+description: Solvix is a TypeScript-first HTTP orchestration engine with 53+ built-in features for production systems.
 ---
 
 Solvix is a **TypeScript-first HTTP orchestration engine** — not just an HTTP client. It transforms simple API requests into secure, observable, resilient, and fully controlled execution pipelines.
 
-Unlike traditional HTTP clients (Axios, Got, Ky) that leave resilience, security, and observability to the developer, Solvix bakes ~50 features into a single 33 KB package.
+Unlike traditional HTTP clients (Axios, Got, Ky) that leave resilience, security, and observability to the developer, Solvix bakes ~53 features into a single 33 KB package.
 
 ## What Solvix Solves
 
@@ -22,7 +22,7 @@ Most libraries leave these to the developer. Solvix integrates them into a singl
 ## Quick Example
 
 ```ts
-import { createClient } from "@adityadev13/solvix";
+import { createClient } from "@solvix-client/client";
 
 const api = createClient({
   baseURL: "https://api.example.com",
@@ -45,6 +45,9 @@ const res = await api.get("/users");
 | **Resilience** | Retry with exponential backoff + jitter, circuit breaker (per-host), rate limiter (token bucket + adaptive), priority queue, request deduplication, fallback URLs |
 | **Observability** | W3C trace context, correlation IDs, aggregated metrics (counters + histograms), request timeline (15 stages), performance profiling, health checks, structured logging, global event bus |
 | **Data Handling** | JSON, form, multipart, text, Blob, ArrayBuffer body types; SSE, JSON Lines, raw stream parsing; request/response transformers; response validation (Zod/Valibot compatible) |
+| **GraphQL** | First-class GraphQL client with query, mutation, batch, APQ persisted queries, entity-level cache normalization, subscriptions via HTTP/SSE and WebSocket transport adapters |
+| **Load Balancing** | Client-side load balancing with round-robin, random, weighted, health-based, and custom strategy functions; per-backend health checking; transparent failover; latency tracking |
+| **Binary Serialization** | Protobuf and MessagePack support via user-provided encoder/decoder functions; zero bundled dependencies; custom Content-Type headers |
 | **Auth & Caching** | Token refresh (stampede-safe), ETag conditional requests, in-memory response caching, cookie jar |
 | **Infrastructure** | HTTP/HTTPS proxy, custom TLS (mTLS, self-signed CAs), custom transport, custom middleware, offline queue, shadow requests |
 

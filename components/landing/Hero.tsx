@@ -40,8 +40,8 @@ export default function Hero() {
         {/* Description */}
         <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
           className="text-lg md:text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-          TypeScript-first HTTP client with ~50 built-in features — retry, circuit breaker,
-          rate limiting, tracing, metrics, health checks, and enterprise security — in 33 KB.
+          TypeScript-first HTTP client with ~53 built-in features — retry, circuit breaker,
+          rate limiting, tracing, metrics, health checks, GraphQL, load balancing, and enterprise security — in 33 KB.
         </motion.p>
 
         {/* CTA buttons */}
@@ -61,7 +61,7 @@ export default function Hero() {
           </a>
           <span className="text-sm text-gray-400 dark:text-gray-500 hidden sm:inline">·</span>
           <span className="text-sm text-gray-400 dark:text-gray-500 hidden sm:inline">
-            npm install @adityadev13/solvix
+            npm install @solvix-client/client
           </span>
         </motion.div>
 

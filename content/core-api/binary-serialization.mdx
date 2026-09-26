@@ -1,0 +1,163 @@
+---
+title: Binary Serialization (Protobuf / MessagePack)
+description: Send and receive Protocol Buffers and MessagePack payloads with zero bundled dependencies. User-provided encoder/decoder functions keep the bundle minimal.
+---
+
+Solvix supports binary serialization formats like Protocol Buffers and MessagePack as first-class body and response types. The library does **not** bundle any serialization library — you provide your own encoder/decoder functions.
+
+## MessagePack
+
+```ts
+import { createClient, createMsgpackCodec } from "@solvix-client/client";
+import { encode, decode } from "@msgpack/msgpack";
+
+const api = createClient({
+  baseURL: "https://api.example.com",
+  serialization: {
+    msgpack: createMsgpackCodec({
+      encoder: (data) => encode(data) as Uint8Array,
+      decoder: (buffer) => decode(new Uint8Array(buffer)),
+    }),
+  },
+});
+
+// Send MessagePack, receive MessagePack
+const res = await api.post("/data", {
+  body: { name: "test", values: [1, 2, 3] },
+  bodyType: "msgpack",
+  responseType: "msgpack",
+});
+
+console.log(res.data);  // { name: "test", values: [1, 2, 3] }
+```
+
+## Protocol Buffers
+
+```ts
+import { createClient, createProtobufCodec } from "@solvix-client/client";
+import { SensorData } from "./generated/sensor_pb";
+
+const api = createClient({
+  baseURL: "https://iot.example.com",
+  serialization: {
+    protobuf: createProtobufCodec({
+      encoder: (data) => SensorData.encode(SensorData.fromObject(data)).finish(),
+      decoder: (buf) => SensorData.decode(new Uint8Array(buf)),
+    }),
+  },
+});
+
+// Send protobuf, receive protobuf
+const res = await api.post("/sensors/ingest", {
+  body: { deviceId: "sensor-42", temperature: 23.5, humidity: 65 },
+  bodyType: "protobuf",
+  responseType: "protobuf",
+});
+```
+
+## Mixed Serialization
+
+You can send one format and receive another:
+
+```ts
+// Upload as protobuf, receive JSON summary
+const res = await api.post("/analytics/events", {
+  body: bulkEvents,
+  bodyType: "protobuf",
+  responseType: "json",
+});
+
+console.log(res.data);  // { processed: 15000, errors: 3 }
+```
+
+## Codec Helpers
+
+### createProtobufCodec
+
+```ts
+import { createProtobufCodec } from "@solvix-client/client";
+
+const codec = createProtobufCodec({
+  encoder: (data) => MyMessage.encode(MyMessage.fromObject(data)).finish(),
+  decoder: (buf) => MyMessage.decode(new Uint8Array(buf)),
+  contentType: "application/x-protobuf",  // Optional, default: "application/protobuf"
+});
+```
+
+### createMsgpackCodec
+
+```ts
+import { createMsgpackCodec } from "@solvix-client/client";
+
+const codec = createMsgpackCodec({
+  encoder: (data) => encode(data) as Uint8Array,
+  decoder: (buffer) => decode(new Uint8Array(buffer)),
+  contentType: "application/x-msgpack",  // Optional, default: "application/msgpack"
+});
+```
+
+## Custom Content-Type
+
+Override the default Content-Type header for either format:
+
+```ts
+serialization: {
+  protobuf: {
+    encoder: myEncoder,
+    decoder: myDecoder,
+    contentType: "application/x-protobuf",
+  },
+  msgpack: {
+    encoder: myEncoder,
+    decoder: myDecoder,
+    contentType: "application/x-msgpack",
+  },
+}
+```
+
+## How It Works
+
+When you set `bodyType: "protobuf"` or `bodyType: "msgpack"`, the request pipeline:
+
+1. Calls your `encoder` function with the request body
+2. Sets the `Content-Type` header to the codec's `contentType`
+3. Sends the binary data as the request body
+
+When you set `responseType: "protobuf"` or `responseType: "msgpack"`:
+
+1. Reads the response as an `ArrayBuffer`
+2. Wraps it in a `Uint8Array`
+3. Calls your `decoder` function to parse it
+
+## Error Handling
+
+If you use `bodyType: "protobuf"` without configuring `serialization.protobuf`, you'll get a clear error:
+
+```
+Error: bodyType "protobuf" requires a serialization.protobuf encoder
+```
+
+## Why Zero Dependencies?
+
+Solvix does not bundle `protobufjs`, `@msgpack/msgpack`, or any other serialization library. This means:
+
+- **No version conflicts** with your existing dependencies
+- **Smaller bundle** — only the codecs you use are included
+- **Flexibility** — use any serialization library you prefer
+- **Custom formats** — the `encoder`/`decoder` interface works for any binary format (BSON, CBOR, FlatBuffers, etc.)
+
+## Types
+
+```ts
+interface SerializationOptions {
+  encoder: (data: unknown) => ArrayBuffer | Uint8Array;
+  decoder: (buffer: ArrayBuffer | Uint8Array) => unknown;
+  contentType?: string;
+}
+
+// In SolvixOptions:
+serialization?: {
+  protobuf?: SerializationOptions;
+  msgpack?: SerializationOptions;
+};
+```

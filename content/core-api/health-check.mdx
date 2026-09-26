@@ -4,7 +4,7 @@ description: Periodic endpoint health pinging with status callbacks. Built-in is
 ---
 
 ```ts
-import { createClient } from "@adityadev13/solvix";
+import { createClient } from "@solvix-client/client";
 
 const client = createClient({
   baseURL: "https://api.example.com",
@@ -37,7 +37,7 @@ interface HealthCheckOptions {
 ## Health Events
 
 ```ts
-import { SolvixBus } from "@adityadev13/solvix";
+import { SolvixBus } from "@solvix-client/client";
 
 SolvixBus.on("health:change", (event) => {
   console.log(`Health: ${event.context.url} → ${event.context.healthy ? "UP" : "DOWN"}`);

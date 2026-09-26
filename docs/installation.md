@@ -13,25 +13,25 @@ It is designed to work seamlessly across multiple runtimes including Node.js, br
 ### Using npm
 
 ```bash
-npm i @adityadev13/solvix
+npm i @solvix-client/client
 ```
 
 ### Using pnpm
 
 ```bash
-pnpm add @adityadev13/solvix
+pnpm add @solvix-client/client
 ```
 
 ### Using yarn
 
 ```bash
-yarn add @adityadev13/solvix
+yarn add @solvix-client/client
 ```
 
 ### Using bun
 
 ```bash
-bun add @adityadev13/solvix
+bun add @solvix-client/client
 ```
 
 ## Environment support
@@ -152,7 +152,7 @@ const client = createClient({
 Ensure Solvix is installed:
 
 ```bash
-npm install @adityadev13/solvix
+npm install @solvix-client/client
 ```
 
 ### Fetch not available

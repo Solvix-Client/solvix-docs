@@ -8,34 +8,34 @@ Solvix works in Node.js 18+, modern browsers, Deno, Bun, and edge runtimes.
 ## npm
 
 ```bash
-npm install @adityadev13/solvix
+npm install @solvix-client/client
 ```
 
 ## pnpm
 
 ```bash
-pnpm add @adityadev13/solvix
+pnpm add @solvix-client/client
 ```
 
 ## yarn
 
 ```bash
-yarn add @adityadev13/solvix
+yarn add @solvix-client/client
 ```
 
 ## bun
 
 ```bash
-bun add @adityadev13/solvix
+bun add @solvix-client/client
 ```
 
 ## CDN (Browser)
 
 ```html
 <script type="module">
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@adityadev13/solvix/dist/index.js";
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@solvix-client/client/dist/index.js";
   // or via unpkg:
-  // import { createClient } from "https://unpkg.com/@adityadev13/solvix/dist/index.js";
+  // import { createClient } from "https://unpkg.com/@solvix-client/client/dist/index.js";
 </script>
 ```
 
@@ -52,13 +52,13 @@ These features are automatically disabled when undici is not available — no er
 ## Verifying Installation
 
 ```bash
-node -e "const { createClient } = require('@adityadev13/solvix'); console.log('OK', typeof createClient);"
+node -e "const { createClient } = require('@solvix-client/client'); console.log('OK', typeof createClient);"
 ```
 
 For ESM:
 
 ```bash
-node --input-type=module -e "import { createClient } from '@adityadev13/solvix'; console.log('OK', typeof createClient);"
+node --input-type=module -e "import { createClient } from '@solvix-client/client'; console.log('OK', typeof createClient);"
 ```
 
 ## Requirements

@@ -1,0 +1,235 @@
+---
+title: Client-side Load Balancing
+description: Distribute requests across multiple backends with built-in strategies, custom strategy functions, health checking, and transparent failover.
+---
+
+Solvix provides client-side load balancing as a drop-in transport. `createLoadBalancer()` returns a `SolvixTransport` that distributes requests across multiple backend servers.
+
+## Basic Usage
+
+```ts
+import { createClient, createLoadBalancer } from "@solvix-client/client";
+
+const transport = createLoadBalancer({
+  backends: [
+    { url: "https://api-1.example.com", weight: 3 },
+    { url: "https://api-2.example.com", weight: 2 },
+    { url: "https://api-3.example.com", weight: 1 },
+  ],
+  strategy: "weighted",
+});
+
+const api = createClient({ transport });
+// All requests are automatically distributed across backends
+const users = await api.get("/users");
+```
+
+## Built-in Strategies
+
+### Round-robin
+
+Distributes requests evenly across all backends in order.
+
+```ts
+const transport = createLoadBalancer({
+  backends: [
+    { url: "https://api-1.example.com" },
+    { url: "https://api-2.example.com" },
+    { url: "https://api-3.example.com" },
+  ],
+  strategy: "round-robin",  // Default
+});
+```
+
+### Random
+
+Picks a random backend for each request.
+
+```ts
+strategy: "random"
+```
+
+### Weighted
+
+Distributes traffic proportionally based on `weight`. A backend with `weight: 3` receives roughly 3x the traffic of one with `weight: 1`.
+
+```ts
+const transport = createLoadBalancer({
+  backends: [
+    { url: "https://api-1.example.com", weight: 5 },  // 50% of traffic
+    { url: "https://api-2.example.com", weight: 3 },  // 30% of traffic
+    { url: "https://api-3.example.com", weight: 2 },  // 20% of traffic
+  ],
+  strategy: "weighted",
+});
+```
+
+### Health
+
+Same as round-robin but filters to healthy backends first. Falls back to all backends if none are healthy (circuit-breaker style).
+
+```ts
+strategy: "health"
+```
+
+## Custom Strategies
+
+For full control, pass a function that receives the backend pool and returns the selected backend.
+
+```ts
+import type { BackendState } from "@solvix-client/client";
+
+// Least-latency strategy
+const transport = createLoadBalancer({
+  backends: [
+    { url: "https://api-1.example.com" },
+    { url: "https://api-2.example.com" },
+    { url: "https://api-3.example.com" },
+  ],
+  strategy: (backends: BackendState[]) => {
+    return backends.reduce((best, b) => b.latency < best.latency ? b : best);
+  },
+});
+```
+
+### BackendState
+
+The `BackendState` interface provides full context for custom strategies:
+
+```ts
+interface BackendState {
+  url: string;
+  weight: number;
+  healthy: boolean;
+  consecutiveFailures: number;
+  lastChecked: number;
+  latency: number;  // Rolling average response time in ms
+}
+```
+
+### Consistent Hash (Sticky Sessions)
+
+Route the same user to the same backend for cache affinity:
+
+```ts
+strategy: (backends: BackendState[]) => {
+  const hash = userId.split("").reduce((h, c) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0);
+  return backends[Math.abs(hash) % backends.length]!;
+}
+```
+
+## Health Checking
+
+Each backend can have its own health check configuration. Health checks run on a background interval and mark backends as healthy/unhealthy.
+
+```ts
+const transport = createLoadBalancer({
+  backends: [
+    {
+      url: "https://api-1.example.com",
+      healthCheck: {
+        endpoint: "/healthz",        // Default: "/health"
+        interval: 10000,             // Check every 10s (default: 30000)
+        timeout: 3000,               // Timeout per check (default: 5000)
+        failureThreshold: 3,         // Failures before marking unhealthy (default: 3)
+        expectedStatus: 200,         // Expected HTTP status (default: 200)
+      },
+    },
+    { url: "https://api-2.example.com" },
+  ],
+  onBackendChange: (url, healthy) => {
+    console.log(`${url} is now ${healthy ? "UP" : "DOWN"}`);
+  },
+});
+```
+
+## Transparent Failover
+
+When a request fails (connection error or 5xx response), the load balancer automatically retries with the next healthy backend. This is transparent to the Solvix retry mechanism — it counts as a single attempt.
+
+```ts
+const transport = createLoadBalancer({
+  backends: [
+    { url: "https://api-1.example.com" },
+    { url: "https://api-2.example.com" },
+    { url: "https://api-3.example.com" },
+  ],
+  failover: {
+    enabled: true,            // Default: true
+    maxRetries: 2,            // Default: backends.length - 1
+  },
+});
+```
+
+Disable failover to let Solvix's own retry mechanism handle failures:
+
+```ts
+failover: { enabled: false }
+```
+
+## Latency Tracking
+
+The load balancer tracks a rolling average response time (exponential moving average with alpha=0.3) for each backend. This data is available to custom strategy functions and is updated after every request.
+
+```ts
+strategy: (backends) => {
+  // Log all backend latencies
+  for (const b of backends) {
+    console.log(`${b.url}: ${b.latency.toFixed(0)}ms`);
+  }
+  // Pick fastest
+  return backends.reduce((a, b) => a.latency < b.latency ? a : b);
+}
+```
+
+## Combining with Other Features
+
+The load balancer is a transport — all other Solvix features work normally:
+
+```ts
+const transport = createLoadBalancer({
+  backends: [
+    { url: "https://api-1.example.com", weight: 3, healthCheck: { endpoint: "/health" } },
+    { url: "https://api-2.example.com", weight: 2, healthCheck: { endpoint: "/health" } },
+  ],
+  strategy: "weighted",
+});
+
+const api = createClient({
+  transport,
+  retry: { retries: 2, jitter: true },
+  circuitBreaker: { failureThreshold: 5, failureRate: 0.5, rollingWindow: 30000, minimumRequests: 10, resetTimeout: 10000 },
+  metrics: { enabled: true },
+  correlation: { enabled: true },
+});
+```
+
+## Types
+
+```ts
+type LoadBalanceStrategy =
+  | "round-robin"
+  | "random"
+  | "weighted"
+  | "health"
+  | ((backends: BackendState[]) => BackendState);
+
+interface LoadBalancerOptions {
+  backends: BackendConfig[];
+  strategy?: LoadBalanceStrategy;
+  failover?: { enabled?: boolean; maxRetries?: number };
+  onBackendChange?: (backend: string, healthy: boolean) => void;
+}
+
+interface BackendConfig {
+  url: string;
+  weight?: number;
+  healthCheck?: {
+    endpoint?: string;
+    interval?: number;
+    timeout?: number;
+    failureThreshold?: number;
+    expectedStatus?: number;
+  };
+}
+```

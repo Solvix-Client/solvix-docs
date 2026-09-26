@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Check, Copy } from 'lucide-react';
 
-const CODE = `import { createClient } from "@adityadev13/solvix";
+const CODE = `import { createClient } from "@solvix-client/client";
 
 const client = createClient({
   baseURL: "https://api.example.com",

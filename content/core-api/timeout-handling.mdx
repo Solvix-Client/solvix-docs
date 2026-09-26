@@ -8,7 +8,7 @@ Solvix uses the Web `AbortController` API for timeout handling — the same mech
 ## Basic Usage
 
 ```ts
-import { createClient } from "@adityadev13/solvix";
+import { createClient } from "@solvix-client/client";
 
 const client = createClient({
   timeout: 5000, // 5 seconds
@@ -104,7 +104,7 @@ try {
 `SolvixBus` also emits timeout errors:
 
 ```ts
-import { SolvixBus } from "@adityadev13/solvix";
+import { SolvixBus } from "@solvix-client/client";
 
 SolvixBus.on("request:error", (event) => {
   if (event.context.error?.name === "AbortError") {

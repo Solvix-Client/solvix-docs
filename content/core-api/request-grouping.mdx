@@ -10,7 +10,7 @@ description: Group related requests together and abort them all at once. Track g
 ## Basic Usage
 
 ```ts
-import { RequestGroup, createClient } from "@adityadev13/solvix";
+import { RequestGroup, createClient } from "@solvix-client/client";
 
 const client = createClient({ baseURL: "https://api.example.com" });
 
@@ -64,7 +64,7 @@ Promise.all([
 ## Real-World Use Case: Page Navigation
 
 ```ts
-import { RequestGroup, createClient } from "@adityadev13/solvix";
+import { RequestGroup, createClient } from "@solvix-client/client";
 
 const client = createClient({ baseURL: "https://api.example.com" });
 let currentGroup: RequestGroup | null = null;
@@ -108,7 +108,7 @@ group.abort();
 Use `SolvixBus` to monitor group-level completion:
 
 ```ts
-import { SolvixBus } from "@adityadev13/solvix";
+import { SolvixBus } from "@solvix-client/client";
 
 SolvixBus.on("request:complete", (event) => {
   const group = event.context.options.group;

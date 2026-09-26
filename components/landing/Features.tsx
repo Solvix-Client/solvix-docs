@@ -1,11 +1,14 @@
 'use client';
 import { motion } from 'framer-motion';
-import { Globe, FileCode, Rocket } from 'lucide-react';
+import { Globe, FileCode, Rocket, Network, Scale, Binary } from 'lucide-react';
 
 const FEATURES = [
   { icon: Globe, title: 'Cross-Runtime', description: 'Zero-config across Node.js, Browser, Bun, Deno, and Edge runtimes.' },
   { icon: FileCode, title: 'TypeScript First', description: 'Full type safety with excellent developer experience and autocomplete.' },
   { icon: Rocket, title: 'Production Ready', description: 'Retries, circuit breaker, rate limiting, deduplication, and enterprise security.' },
+  { icon: Network, title: 'GraphQL Client', description: 'First-class query, mutation, batch, APQ, and subscriptions with transport adapters.' },
+  { icon: Scale, title: 'Load Balancing', description: 'Client-side load balancing with round-robin, weighted, health-based, and custom strategies.' },
+  { icon: Binary, title: 'Binary Serialization', description: 'Protobuf and MessagePack support with zero bundled dependencies.' },
 ];
 
 export default function Features() {

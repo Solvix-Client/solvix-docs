@@ -10,7 +10,7 @@ The `transport` option lets you replace the default `fetch` implementation with 
 ## Basic Usage
 
 ```ts
-import { createClient, type SolvixTransport } from "@adityadev13/solvix";
+import { createClient, type SolvixTransport } from "@solvix-client/client";
 
 const loggingTransport: SolvixTransport = async (url, init) => {
   console.log(`→ ${init.method} ${url}`);
@@ -42,8 +42,8 @@ The transport receives the **resolved URL** (with baseURL and params applied) an
 ### Request Mocking (Testing)
 
 ```ts
-import { createClient } from "@adityadev13/solvix";
-import type { SolvixTransport } from "@adityadev13/solvix";
+import { createClient } from "@solvix-client/client";
+import type { SolvixTransport } from "@solvix-client/client";
 
 // Mock transport for tests
 function createMockTransport(responses: Map<string, Response>): SolvixTransport {
@@ -70,7 +70,7 @@ console.log(res.data); // [{ id: 1 }]
 ### HTTP/2 Transport (Node.js)
 
 ```ts
-import { createClient } from "@adityadev13/solvix";
+import { createClient } from "@solvix-client/client";
 import { request } from "http2";
 
 const http2Transport: SolvixTransport = async (url, init) => {

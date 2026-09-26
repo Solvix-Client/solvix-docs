@@ -61,6 +61,9 @@ export const sidebars: Record<string, string[]> = {
     "core-api/tls",
     "core-api/fallback-urls",
     "core-api/streaming-support-sse-json-lines",
+    "core-api/graphql-client",
+    "core-api/load-balancing",
+    "core-api/binary-serialization",
   ],
   "Usage Patterns": [
     "usage-patterns/using-solvix-with-react",

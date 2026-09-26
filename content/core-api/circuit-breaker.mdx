@@ -10,7 +10,7 @@ The Circuit Breaker protects downstream services from being overwhelmed by faili
 ## Basic Usage
 
 ```ts
-import { createClient } from "@adityadev13/solvix";
+import { createClient } from "@solvix-client/client";
 
 const client = createClient({
   circuitBreaker: {
@@ -147,7 +147,7 @@ try {
 Use `SolvixBus` to react to circuit state changes:
 
 ```ts
-import { SolvixBus } from "@adityadev13/solvix";
+import { SolvixBus } from "@solvix-client/client";
 
 SolvixBus.on("request:error", (event) => {
   if (event.context.error?.message?.includes("Circuit breaker")) {

@@ -10,7 +10,7 @@ description: Subscribe to request lifecycle events globally. Monitor start, comp
 ## Basic Usage
 
 ```ts
-import { SolvixBus } from "@adityadev13/solvix";
+import { SolvixBus } from "@solvix-client/client";
 
 SolvixBus.on("request:complete", (event) => {
   console.log(`✓ ${event.context.url} → ${event.context.response?.status}`);

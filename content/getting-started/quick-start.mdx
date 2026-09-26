@@ -8,13 +8,13 @@ This guide walks through creating a Solvix client, sending requests, handling re
 ## Step 1: Install
 
 ```bash
-npm install @adityadev13/solvix
+npm install @solvix-client/client
 ```
 
 ## Step 2: Create a Client
 
 ```ts
-import { createClient } from "@adityadev13/solvix";
+import { createClient } from "@solvix-client/client";
 
 const client = createClient({
   baseURL: "https://jsonplaceholder.typicode.com",
@@ -92,7 +92,7 @@ Now if a request fails, Solvix retries automatically with exponential backoff.
 ## Step 7: Add Observability
 
 ```ts
-import { createClient } from "@adityadev13/solvix";
+import { createClient } from "@solvix-client/client";
 
 const client = createClient({
   baseURL: "https://jsonplaceholder.typicode.com",
@@ -115,7 +115,7 @@ Every response now carries timing and performance data automatically.
 ## Step 8: Subscribe to Global Events
 
 ```ts
-import { SolvixBus } from "@adityadev13/solvix";
+import { SolvixBus } from "@solvix-client/client";
 
 SolvixBus.on("request:complete", (event) => {
   console.log(`[${event.context.meta.correlationId}] ${event.context.url}`);
@@ -127,7 +127,7 @@ The event bus fires on every request lifecycle stage — start, retry, complete,
 ## Complete Example
 
 ```ts
-import { createClient, SolvixBus } from "@adityadev13/solvix";
+import { createClient, SolvixBus } from "@solvix-client/client";
 
 // Subscribe to events
 SolvixBus.on("request:complete", (e) => {
